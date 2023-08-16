@@ -1,0 +1,213 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                Int                @id @default(autoincrement())
+  firstname         String?
+  lastname          String?
+  email             String             @unique
+  phoneNumber       String?
+  username          String             @unique
+  isBlocked         Boolean
+  password          String
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime?          @updatedAt
+  dateOfBirth       DateTime?
+  gender            String?
+  roleId            Int?
+  role              Role?              @relation(fields: [roleId], references: [id])
+  addressId         Int                @unique
+  address           Address?           @relation(fields: [addressId], references: [id])
+  cartId            Int?               @unique
+  cart              Cart?              @relation(fields: [cartId], references: [id])
+  order             Order[]
+  confirmationToken String?
+  verificationCode  String?
+  wishlistId        Int?               @unique
+  wishlist          WishList?          @relation(fields: [wishlistId], references: [id])
+  reviews           Reviews[]
+  audit             Audit?
+  notification      UserNotification[]
+}
+
+model Address {
+  id                       Int     @id @default(autoincrement())
+  streetAddress            String
+  city                     String
+  state                    String
+  country                  String
+  isDefaultShippingAddress Boolean
+  user                     User?
+}
+
+model Role {
+  id       Int    @id @default(autoincrement())
+  roleName String @unique
+  user     User[] @ignore
+}
+
+model Cart {
+  id        Int         @id @default(autoincrement())
+  quantity  Int
+  cartTotal Decimal
+  cartItems CartItems[]
+  user      User?
+}
+
+model CartItems {
+  id        Int     @id @default(autoincrement())
+  subTotal  Decimal
+  quantity  Int
+  cartId    Int
+  cart      Cart    @relation(fields: [cartId], references: [id])
+  productId Int     @unique
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model Product {
+  id                Int            @id @default(autoincrement())
+  productName       String
+  productPrice      String
+  quantityAvailable Int
+  size              Size
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  productImages     ProductImage[]
+  cartItems         CartItems?
+  categoryId        Int
+  category          Category       @relation(fields: [categoryId], references: [id])
+  wishlistId        Int            @unique
+  wishlist          WishList       @relation(fields: [wishlistId], references: [id])
+  reviews           Reviews[]
+}
+
+model ProductImage {
+  id        Int     @id @default(autoincrement())
+  imageUrl  String
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model Category {
+  id           Int       @id @default(autoincrement())
+  categoryName String
+  product      Product[]
+}
+
+model Order {
+  id            Int          @id @default(autoincrement())
+  dateOrdered   DateTime
+  dateDelivered DateTime
+  totalPrice    Decimal
+  status        OrderStatus
+  orderItems    OrderItems[]
+  userId        Int
+  deliveryType  DeliveryType
+  user          User         @relation(fields: [userId], references: [id])
+  payment       Payment?
+}
+
+model OrderItems {
+  id      Int   @id @default(autoincrement())
+  orderid Int
+  order   Order @relation(fields: [orderid], references: [id])
+}
+
+model WishList {
+  id      Int       @id @default(autoincrement())
+  product Product[]
+  user    User?
+}
+
+model Reviews {
+  id        Int      @id @default(autoincrement())
+  rating    Decimal
+  feedback  String
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Audit {
+  id        Int         @id @default(autoincrement())
+  userId    Int         @unique
+  user      User        @relation(fields: [userId], references: [id])
+  action    AuditAction
+  tableName String
+  recordId  Int
+  oldData   Json
+  newData   Json
+  createdAt DateTime    @default(now())
+}
+
+model Coupon {
+  id                 Int      @id @default(autoincrement())
+  couponCode         String
+  discountPercentage Decimal
+  expiryDate         DateTime
+}
+
+model Payment {
+  id            Int      @id @default(autoincrement())
+  orderId       Int      @unique
+  order         Order    @relation(fields: [orderId], references: [id])
+  createdAt     DateTime @default(now())
+  status        String
+  amount        Decimal
+  paymentmethod String
+}
+
+model Notification {
+  id               Int                @id @default(autoincrement())
+  notificationType String
+  content          String
+  user             UserNotification[]
+  createdAt        DateTime           @default(now())
+  isRead           Boolean
+}
+
+model UserNotification {
+  id             Int          @id @default(autoincrement())
+  userId         Int
+  notificationId Int
+  user           User         @relation(fields: [userId], references: [id])
+  notification   Notification @relation(fields: [notificationId], references: [id])
+
+  @@unique([userId, notificationId])
+}
+
+enum OrderStatus {
+  PENDING
+  DELIVERED
+  CANCELLED
+}
+
+enum Size {
+  S
+  M
+  L
+  XL
+  XXL
+}
+
+enum DeliveryType {
+  PICKUP
+  DELIVERY
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+}
