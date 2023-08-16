@@ -23,12 +23,13 @@ model User {
   updatedAt         DateTime?          @updatedAt
   dateOfBirth       DateTime?
   gender            String?
-  roleId            Int?
-  role              Role?              @relation(fields: [roleId], references: [id])
-  addressId         Int                @unique
+  image             String?
+  roleId            Int                
+  role              Role               @relation(fields: [roleId], references: [id])
+  addressId         Int?                @unique
   address           Address?           @relation(fields: [addressId], references: [id])
-  cartId            Int?               @unique
-  cart              Cart?              @relation(fields: [cartId], references: [id])
+  cartId            Int                @unique
+  cart              Cart               @relation(fields: [cartId], references: [id])
   order             Order[]
   confirmationToken String?
   verificationCode  String?
@@ -52,7 +53,7 @@ model Address {
 model Role {
   id       Int    @id @default(autoincrement())
   roleName String @unique
-  user     User[] @ignore
+  user     User[] 
 }
 
 model Cart {

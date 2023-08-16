@@ -25,7 +25,6 @@ export class AuthService {
         }
 
 
-        const role = (await this.roleService.findByRoleName("USER")).id
         const hashedPassword = await this.hashPassword(dto.password)
 
         const user = await this.prismaService.user.create({
@@ -34,15 +33,28 @@ export class AuthService {
                 email: dto.email,
                 password: hashedPassword,
                 isBlocked: true,
+                cart: {
+                    create: {
+                        quantity: 0,
+                        cartTotal : 0
+                    }
+                },
+                wishlist: {
+                    create: {}
+                },
+                role: {
+                    connectOrCreate: {
+                        where: {
+                            roleName: "USER"
+                        },
+                        create: {
+                            roleName: "USER"
+                        }
+                    }
+                }
             }
         })
 
-        await this.prismaService.cart.create({
-            data: {
-                quantity: 0,
-                cartTotal : 0,
-            }
-        })
 
         return user
     }
@@ -72,6 +84,10 @@ export class AuthService {
         return {token, roleName : role.roleName} 
 
     }
+
+    // async getLoggedInUser() : Promise<User>{
+
+    // }
 
     public async hashPassword (password: string) {
         const salt = await bcrypt.genSalt(10)

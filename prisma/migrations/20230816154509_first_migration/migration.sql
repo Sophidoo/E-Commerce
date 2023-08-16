@@ -22,14 +22,15 @@ CREATE TABLE "User" (
     "password" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3),
-    "roleId" INTEGER NOT NULL,
     "dateOfBirth" TIMESTAMP(3),
     "gender" TEXT,
-    "addressId" INTEGER NOT NULL,
+    "image" TEXT,
+    "roleId" INTEGER NOT NULL,
+    "addressId" INTEGER,
     "cartId" INTEGER NOT NULL,
     "confirmationToken" TEXT,
     "verificationCode" TEXT,
-    "wishlistId" INTEGER NOT NULL,
+    "wishlistId" INTEGER,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -218,6 +219,9 @@ CREATE UNIQUE INDEX "User_cartId_key" ON "User"("cartId");
 CREATE UNIQUE INDEX "User_wishlistId_key" ON "User"("wishlistId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Role_roleName_key" ON "Role"("roleName");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "CartItems_productId_key" ON "CartItems"("productId");
 
 -- CreateIndex
@@ -236,13 +240,13 @@ CREATE UNIQUE INDEX "UserNotification_userId_notificationId_key" ON "UserNotific
 ALTER TABLE "User" ADD CONSTRAINT "User_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "Role"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "User" ADD CONSTRAINT "User_addressId_fkey" FOREIGN KEY ("addressId") REFERENCES "Address"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "User" ADD CONSTRAINT "User_addressId_fkey" FOREIGN KEY ("addressId") REFERENCES "Address"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "User" ADD CONSTRAINT "User_cartId_fkey" FOREIGN KEY ("cartId") REFERENCES "Cart"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "User" ADD CONSTRAINT "User_wishlistId_fkey" FOREIGN KEY ("wishlistId") REFERENCES "WishList"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "User" ADD CONSTRAINT "User_wishlistId_fkey" FOREIGN KEY ("wishlistId") REFERENCES "WishList"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "CartItems" ADD CONSTRAINT "CartItems_cartId_fkey" FOREIGN KEY ("cartId") REFERENCES "Cart"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
