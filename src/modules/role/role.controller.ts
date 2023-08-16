@@ -13,7 +13,7 @@ export class RoleController {
     }
 
     @Put("/update/:id")
-    updateRole(@Param() id : number , @Body() dto: RoleDTO){
+    updateRole(@Param('id') id : number , @Body() dto: RoleDTO){
         return this.updateRole(id, dto)
     }
 
@@ -24,7 +24,7 @@ export class RoleController {
 
     @Delete("/delete/:id")
     @HttpCode(HttpStatus.NO_CONTENT)
-    deleteRole(@Param() id : number){
+    deleteRole(@Param('id') id : number){
         return this.deleteRole(id)
     }
     
