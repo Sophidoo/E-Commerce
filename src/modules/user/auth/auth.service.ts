@@ -7,6 +7,7 @@ import * as jwt from "jsonwebtoken"
 import {UnauthorizedException, ConflictException} from '@nestjs/common'
 import { RoleService } from 'src/modules/role/role.service';
 import { LoginDTO } from '../dtos/LoginDTO';
+import { LoginResponseDTO } from '../dtos/LoginResponseDTO';
 
 @Injectable()
 export class AuthService {
@@ -32,14 +33,21 @@ export class AuthService {
                 username: dto.username,
                 email: dto.email,
                 password: hashedPassword,
-                isBlocked: true
+                isBlocked: true,
+            }
+        })
+
+        await this.prismaService.cart.create({
+            data: {
+                quantity: 0,
+                cartTotal : 0,
             }
         })
 
         return user
     }
 
-    async login (dto : LoginDTO) : Promise<string> {
+    async login (dto : LoginDTO) : Promise<LoginResponseDTO> {
         const exists = await this.prismaService.user.findFirst({
             where: {
                 OR: [
@@ -60,8 +68,8 @@ export class AuthService {
         }
 
         const token = this.signJwt(exists.id) 
-        // const role = (await this.roleServicere
-        return token
+        const role = await this.roleService.findByRoleId(exists.roleId)
+        return {token, roleName : role.roleName} 
 
     }
 

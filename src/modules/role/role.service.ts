@@ -47,7 +47,7 @@ export class RoleService {
         })
     }
 
-    async deleteRole(id : number, dto : RoleDTO) : Promise<Role>{
+    async deleteRole(id : number) : Promise<string>{
         const exists = await this.prismaService.role.findUnique({
             where: {
                 id : id
@@ -58,11 +58,13 @@ export class RoleService {
             throw new NotFoundException("Role with id " + id + " does not exists")
         }
 
-        return await this.prismaService.role.delete({
+        await this.prismaService.role.delete({
             where: {
                 id
             }
         })
+
+        return "Role deleted"
     }
 
     async getAllRoles() : Promise<Role[]>{
@@ -78,6 +80,20 @@ export class RoleService {
 
         if(!exists){
             throw new NotFoundException("Role with name " + roleName + " does not exists")
+        }
+
+        return exists
+    }
+
+    async findByRoleId(roleId : number) : Promise<Role>{
+        const exists = await this.prismaService.role.findUnique({
+            where: {
+                id : roleId
+            }
+        })
+
+        if(!exists){
+            throw new NotFoundException("Role with id " + roleId + " does not exists")
         }
 
         return exists
