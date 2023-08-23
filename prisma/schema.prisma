@@ -24,8 +24,7 @@ model User {
   dateOfBirth       DateTime?
   gender            String?
   image             String?
-  roleId            Int
-  role              Role               @relation(fields: [roleId], references: [id])
+  role              RoleType
   addressId         Int?               @unique
   address           Address?           @relation(fields: [addressId], references: [id])
   cartId            Int                @unique
@@ -51,11 +50,6 @@ model Address {
   user                     User?
 }
 
-model Role {
-  id       Int    @id @default(autoincrement())
-  roleName String @unique
-  user     User[]
-}
 
 model Cart {
   id        Int         @id @default(autoincrement())
@@ -209,6 +203,10 @@ enum DeliveryType {
   DELIVERY
 }
 
+enum RoleType{
+  USER
+  ADMIN
+}
 enum AuditAction {
   CREATE
   UPDATE

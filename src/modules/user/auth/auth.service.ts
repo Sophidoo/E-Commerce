@@ -1,20 +1,20 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
 import { RegisterDTO } from '../dtos/RegisterDTO';
-import { User } from '@prisma/client';
+import { RoleType, User } from '@prisma/client';
 import * as bcrypt from "bcrypt"
 import * as jwt from "jsonwebtoken"
 import {UnauthorizedException, ConflictException} from '@nestjs/common'
-import { RoleService } from 'src/modules/role/role.service';
 import { LoginDTO } from '../dtos/LoginDTO';
 import { LoginResponseDTO } from '../dtos/LoginResponseDTO';
 import { EditAuthDetailsDTO, EditPasswordDTO, ForgotPasswordDTO, ResetPasswordDTO } from '../dtos/EditAuthDetailsDTO';
+import { UserResponseDTO } from '../dtos/UserResponseDTO';
 
 @Injectable()
 export class AuthService {
-    constructor(private readonly prismaService : PrismaService, private readonly roleService : RoleService) {}
+    constructor(private readonly prismaService : PrismaService) {}
 
-    async signup(dto: RegisterDTO): Promise<User>{
+    async signup(dto: RegisterDTO): Promise<UserResponseDTO>{
         const exists = await this.prismaService.user.findUnique({
             where: {
                 email: dto.email
@@ -43,16 +43,7 @@ export class AuthService {
                 wishlist: {
                     create: {}
                 },
-                role: {
-                    connectOrCreate: {
-                        where: {
-                            roleName: "USER"
-                        },
-                        create: {
-                            roleName: "USER"
-                        }
-                    }
-                }
+                role: RoleType.USER
             }
         })
 
@@ -83,8 +74,8 @@ export class AuthService {
         }
 
         const token = this.signJwt(exists.id) 
-        const role = await this.roleService.findByRoleId(exists.roleId)
-        return {token, roleName : role.roleName} 
+        const role = "USER"
+        return {token, role: "USER"} 
 
     }
 

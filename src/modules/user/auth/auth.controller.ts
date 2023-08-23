@@ -5,14 +5,18 @@ import { LoginDTO } from '../dtos/LoginDTO';
 import { EditAuthDetailsDTO, EditPasswordDTO } from '../dtos/EditAuthDetailsDTO';
 import { User } from '../../../decorator/user.decorator';
 import { Public } from 'src/decorator/public.decorator';
+import { Roles } from 'src/decorator/roles.decorator';
+import { $Enums, RoleType } from '@prisma/client';
+import { UserResponseDTO } from '../dtos/UserResponseDTO';
 
 @Controller('api/v1/auth')
 export class AuthController {
     constructor(private readonly authService : AuthService){}
 
+    
     @Public()
     @Post('/signup')
-    signup(@Body() dto: RegisterDTO){
+    signup(@Body() dto: RegisterDTO) : Promise<UserResponseDTO>{
         return this.authService.signup(dto)
     }
 
@@ -32,9 +36,11 @@ export class AuthController {
         return this.authService.updatePassword(user, dto);
     }
 
+    @Roles(RoleType.ADMIN, RoleType.USER)
     @Get()
     getLoggedInUser(@User() user:number){
         return this.authService.getLoggedInUser(user)
     }
+    
 
 }

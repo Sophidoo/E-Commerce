@@ -8,6 +8,9 @@ CREATE TYPE "Size" AS ENUM ('S', 'M', 'L', 'XL', 'XXL');
 CREATE TYPE "DeliveryType" AS ENUM ('PICKUP', 'DELIVERY');
 
 -- CreateEnum
+CREATE TYPE "RoleType" AS ENUM ('USER', 'ADMIN');
+
+-- CreateEnum
 CREATE TYPE "AuditAction" AS ENUM ('CREATE', 'UPDATE', 'DELETE');
 
 -- CreateTable
@@ -25,10 +28,11 @@ CREATE TABLE "User" (
     "dateOfBirth" TIMESTAMP(3),
     "gender" TEXT,
     "image" TEXT,
-    "roleId" INTEGER NOT NULL,
+    "role" "RoleType" NOT NULL,
     "addressId" INTEGER,
     "cartId" INTEGER NOT NULL,
     "confirmationToken" TEXT,
+    "tokenExpires" TIMESTAMP(3),
     "verificationCode" TEXT,
     "wishlistId" INTEGER,
 
@@ -45,14 +49,6 @@ CREATE TABLE "Address" (
     "isDefaultShippingAddress" BOOLEAN NOT NULL,
 
     CONSTRAINT "Address_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "Role" (
-    "id" SERIAL NOT NULL,
-    "roleName" TEXT NOT NULL,
-
-    CONSTRAINT "Role_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -94,6 +90,7 @@ CREATE TABLE "Product" (
 CREATE TABLE "ProductImage" (
     "id" SERIAL NOT NULL,
     "imageUrl" TEXT NOT NULL,
+    "defaultImage" BOOLEAN NOT NULL,
     "productId" INTEGER NOT NULL,
 
     CONSTRAINT "ProductImage_pkey" PRIMARY KEY ("id")
@@ -219,9 +216,6 @@ CREATE UNIQUE INDEX "User_cartId_key" ON "User"("cartId");
 CREATE UNIQUE INDEX "User_wishlistId_key" ON "User"("wishlistId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Role_roleName_key" ON "Role"("roleName");
-
--- CreateIndex
 CREATE UNIQUE INDEX "CartItems_productId_key" ON "CartItems"("productId");
 
 -- CreateIndex
@@ -235,9 +229,6 @@ CREATE UNIQUE INDEX "Payment_orderId_key" ON "Payment"("orderId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "UserNotification_userId_notificationId_key" ON "UserNotification"("userId", "notificationId");
-
--- AddForeignKey
-ALTER TABLE "User" ADD CONSTRAINT "User_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "Role"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "User" ADD CONSTRAINT "User_addressId_fkey" FOREIGN KEY ("addressId") REFERENCES "Address"("id") ON DELETE SET NULL ON UPDATE CASCADE;

@@ -1,11 +1,12 @@
-import { CanActivate, ExecutionContext, UnauthorizedException } from "@nestjs/common";
-import jwt, { JwtPayload } from 'jsonwebtoken';
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
+import * as jwt from 'jsonwebtoken';
+import { JwtPayload } from "jsonwebtoken";
 
 import { Request } from 'express';
 import { Reflector } from "@nestjs/core";
 import { IS_PUBLIC_KEY } from "src/decorator/public.decorator";
 
-
+@Injectable()
 export class AuthGuard implements CanActivate{
 
     constructor (private reflector : Reflector){}
@@ -25,10 +26,11 @@ export class AuthGuard implements CanActivate{
         if(!token){
             throw new UnauthorizedException();
         }
-
+        
         try {
             const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY) as JwtPayload;
-            request.user = decoded;
+            request.user = decoded.id;
+
         } catch (error) {
             throw new UnauthorizedException();
         }
