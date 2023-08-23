@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
 import { RegisterDTO } from '../dtos/RegisterDTO';
 import { User } from '@prisma/client';
@@ -8,6 +8,7 @@ import {UnauthorizedException, ConflictException} from '@nestjs/common'
 import { RoleService } from 'src/modules/role/role.service';
 import { LoginDTO } from '../dtos/LoginDTO';
 import { LoginResponseDTO } from '../dtos/LoginResponseDTO';
+import { EditAuthDetailsDTO, EditPasswordDTO, ForgotPasswordDTO, ResetPasswordDTO } from '../dtos/EditAuthDetailsDTO';
 
 @Injectable()
 export class AuthService {
@@ -55,6 +56,8 @@ export class AuthService {
             }
         })
 
+        //TODO: create Email verification 
+
 
         return user
     }
@@ -85,9 +88,128 @@ export class AuthService {
 
     }
 
-    // async getLoggedInUser() : Promise<User>{
+    async getLoggedInUser(id: number) : Promise<User>{
+        const user = await this.prismaService.user.findUnique({
+            where: {
+                id
+            }
+        })
+        return user
+    }
 
-    // }
+    async  deleteMyAccount(id : number) : Promise<string>{
+        await this.prismaService.user.delete({
+            where: {
+                id
+            }
+        })
+
+        // TODO: delete cascade that is everything related to it 
+
+        return "Account Deleted Successfully"
+    }
+
+    async editUsernameOrEmail(id : number, dto : EditAuthDetailsDTO) : Promise<EditAuthDetailsDTO>{
+        const user = await this.prismaService.user.findUnique({
+            where: {
+                id
+            }
+        })
+
+        if(!user){
+            throw new NotFoundException("User not found")
+        }
+
+        
+        return this.prismaService.user.update({
+            where: {
+                id
+            },
+            data: {
+                ...dto
+            }
+        })
+        
+    }
+
+    async updatePassword( id: number, dto : EditPasswordDTO) : Promise<string>{
+        const user = await this.prismaService.user.findUnique({
+            where: {
+                id
+            }
+        })
+
+        if(!user){
+            throw new NotFoundException("User not found")
+        }
+
+        const passwordMatch = await this.passwordsMatch(user.password, dto.oldPassword)
+
+        if(!passwordMatch){
+            throw new BadRequestException("Incorrect Password")
+        }
+
+        if(dto.newPassword !== dto.confirmPassword){
+            throw new BadRequestException("new password and cnofirm password does not match")
+        }
+
+        const hashedPassword = await this.hashPassword(dto.newPassword)
+
+        this.prismaService.user.update({
+            where: {
+                id
+            },
+            data: {
+                password: hashedPassword
+            }
+        })
+
+        return "Password Updated Successfully"
+    }
+
+    async forgotPassword(dto : ForgotPasswordDTO) : Promise<string>{
+        return null
+    }
+
+    async resendOtp() : Promise<string>{
+        return "Otp sent successfully"
+    }
+
+    async resetPassword(id : number, dto : ResetPasswordDTO) : Promise<string>{
+        const user = await this.prismaService.user.findUnique({
+            where: {
+                id
+            }
+        })
+
+        if(!user){
+            throw new NotFoundException("User not found")
+        }
+
+        const hashedPassword = await this.hashPassword(dto.password)
+
+        this.prismaService.user.update({
+            where: {
+                id
+            },
+            data: {
+                password: hashedPassword
+            }
+        })
+
+        return "Password Reset Successfull"
+    }
+
+    async googleAuth() : Promise<User>{
+        return null
+    }
+
+
+    async grenerateVerificationToken () {
+        const currentDate = new Date()
+        const expirationDate = new Date(currentDate.getTime() + (24 * 60 * 60 * 1000));
+        // const otp = crypto.randomBytes()
+    }
 
     public async hashPassword (password: string) {
         const salt = await bcrypt.genSalt(10)
@@ -97,6 +219,7 @@ export class AuthService {
     private async passwordsMatch (passwordFromDb: string, loginPassword: string): Promise<boolean> {
         return await bcrypt.compare(loginPassword, passwordFromDb)
     }
+
 
     public signJwt ( id: number) {
         return jwt.sign(
