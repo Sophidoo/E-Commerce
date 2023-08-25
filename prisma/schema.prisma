@@ -44,6 +44,7 @@ model Otp {
   token      String
   userEmail  String
   expiryDate DateTime
+  createdAt  DateTime @default(now())
   otpType    OtpType
 }
 

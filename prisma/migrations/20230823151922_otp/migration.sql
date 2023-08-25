@@ -11,6 +11,9 @@ CREATE TYPE "DeliveryType" AS ENUM ('PICKUP', 'DELIVERY');
 CREATE TYPE "RoleType" AS ENUM ('USER', 'ADMIN');
 
 -- CreateEnum
+CREATE TYPE "OtpType" AS ENUM ('REGISTER', 'RESET');
+
+-- CreateEnum
 CREATE TYPE "AuditAction" AS ENUM ('CREATE', 'UPDATE', 'DELETE');
 
 -- CreateTable
@@ -31,12 +34,23 @@ CREATE TABLE "User" (
     "role" "RoleType" NOT NULL,
     "addressId" INTEGER,
     "cartId" INTEGER NOT NULL,
-    "confirmationToken" TEXT,
-    "tokenExpires" TIMESTAMP(3),
+    "isVerified" BOOLEAN NOT NULL,
     "verificationCode" TEXT,
     "wishlistId" INTEGER,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Otp" (
+    "id" SERIAL NOT NULL,
+    "token" TEXT NOT NULL,
+    "userEmail" TEXT NOT NULL,
+    "expiryDate" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "otpType" "OtpType" NOT NULL,
+
+    CONSTRAINT "Otp_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable

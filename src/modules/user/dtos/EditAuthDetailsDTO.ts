@@ -8,6 +8,10 @@ export class EditAuthDetailsDTO{
     @IsOptional()
     @IsNotEmpty()
     email: string
+
+    constructor(partial: Partial<EditAuthDetailsDTO>){
+        Object.assign(this, partial)
+    }
 }
 
 export class EditPasswordDTO{
