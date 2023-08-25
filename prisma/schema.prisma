@@ -11,33 +11,40 @@ datasource db {
 }
 
 model User {
-  id                Int                @id @default(autoincrement())
-  firstname         String?
-  lastname          String?
-  email             String             @unique
-  phoneNumber       String?
-  username          String             @unique
-  isBlocked         Boolean
-  password          String
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime?          @updatedAt
-  dateOfBirth       DateTime?
-  gender            String?
-  image             String?
-  role              RoleType
-  addressId         Int?               @unique
-  address           Address?           @relation(fields: [addressId], references: [id])
-  cartId            Int                @unique
-  cart              Cart               @relation(fields: [cartId], references: [id])
-  order             Order[]
-  confirmationToken String?
-  tokenExpires      DateTime?
-  verificationCode  String?
-  wishlistId        Int?               @unique
-  wishlist          WishList?          @relation(fields: [wishlistId], references: [id])
-  reviews           Reviews[]
-  audit             Audit?
-  notification      UserNotification[]
+  id               Int                @id @default(autoincrement())
+  firstname        String?
+  lastname         String?
+  email            String             @unique
+  phoneNumber      String?
+  username         String             @unique
+  isBlocked        Boolean
+  password         String
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime?          @updatedAt
+  dateOfBirth      DateTime?
+  gender           String?
+  image            String?
+  role             RoleType
+  addressId        Int?               @unique
+  address          Address?           @relation(fields: [addressId], references: [id])
+  cartId           Int                @unique
+  cart             Cart               @relation(fields: [cartId], references: [id])
+  order            Order[]
+  isVerified       Boolean
+  verificationCode String?
+  wishlistId       Int?               @unique
+  wishlist         WishList?          @relation(fields: [wishlistId], references: [id])
+  reviews          Reviews[]
+  audit            Audit?
+  notification     UserNotification[]
+}
+
+model Otp {
+  id         Int      @id @default(autoincrement())
+  token      String
+  userEmail  String
+  expiryDate DateTime
+  otpType    OtpType
 }
 
 model Address {
@@ -49,7 +56,6 @@ model Address {
   isDefaultShippingAddress Boolean
   user                     User?
 }
-
 
 model Cart {
   id        Int         @id @default(autoincrement())
@@ -203,10 +209,16 @@ enum DeliveryType {
   DELIVERY
 }
 
-enum RoleType{
+enum RoleType {
   USER
   ADMIN
 }
+
+enum OtpType {
+  REGISTER
+  RESET
+}
+
 enum AuditAction {
   CREATE
   UPDATE

@@ -2,7 +2,7 @@ import { Body, Controller, Get, Patch, Post, Put, UseGuards } from '@nestjs/comm
 import { AuthService } from './auth.service';
 import { RegisterDTO } from '../dtos/RegisterDTO';
 import { LoginDTO } from '../dtos/LoginDTO';
-import { EditAuthDetailsDTO, EditPasswordDTO } from '../dtos/EditAuthDetailsDTO';
+import { EditAuthDetailsDTO, EditPasswordDTO, ResetPasswordDTO } from '../dtos/EditAuthDetailsDTO';
 import { User } from '../../../decorator/user.decorator';
 import { Public } from 'src/decorator/public.decorator';
 import { Roles } from 'src/decorator/roles.decorator';
@@ -31,9 +31,14 @@ export class AuthController {
         return this.authService.editUsernameOrEmail(user, dto)
     }
 
-    @Put('/updatePassword')
+    @Patch('/updatePassword')
     updatePassword(@Body() dto : EditPasswordDTO, @User() user : number){
         return this.authService.updatePassword(user, dto);
+    }
+
+    @Patch('/reset')
+    resetPassword(@Body() dto : ResetPasswordDTO,  @User() user : number){
+        return this.authService.resetPassword(user, dto);
     }
 
     @Roles(RoleType.ADMIN, RoleType.USER)

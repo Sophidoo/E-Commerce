@@ -17,6 +17,8 @@ export class EditPasswordDTO{
     @IsStrongPassword()
     @IsNotEmpty({message: "Please input your new password"})
     newPassword: string
+
+    @IsNotEmpty()
     confirmPassword: string
 }
 
@@ -26,6 +28,14 @@ export class ForgotPasswordDTO{
 }
 
 export class ResetPasswordDTO{
-    otp: string;
-    password: string;
+    @IsStrongPassword()
+    @IsNotEmpty({message: "Please input your new password"})
+    newPassword: string
+
+    @IsNotEmpty()
+    confirmPassword: string
+}
+
+export class verifyOtpDTO{
+    otp: string
 }

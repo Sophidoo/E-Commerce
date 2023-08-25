@@ -4,15 +4,17 @@ import { RegisterDTO } from '../dtos/RegisterDTO';
 import { RoleType, User } from '@prisma/client';
 import * as bcrypt from "bcrypt"
 import * as jwt from "jsonwebtoken"
+import * as speakeasy from 'speakeasy';
 import {UnauthorizedException, ConflictException} from '@nestjs/common'
 import { LoginDTO } from '../dtos/LoginDTO';
 import { LoginResponseDTO } from '../dtos/LoginResponseDTO';
-import { EditAuthDetailsDTO, EditPasswordDTO, ForgotPasswordDTO, ResetPasswordDTO } from '../dtos/EditAuthDetailsDTO';
+import { EditAuthDetailsDTO, EditPasswordDTO, ForgotPasswordDTO, ResetPasswordDTO, verifyOtpDTO } from '../dtos/EditAuthDetailsDTO';
 import { UserResponseDTO } from '../dtos/UserResponseDTO';
 
 @Injectable()
 export class AuthService {
     constructor(private readonly prismaService : PrismaService) {}
+    private otpSecrets: Map<string, string> = new Map();
 
     async signup(dto: RegisterDTO): Promise<UserResponseDTO>{
         const exists = await this.prismaService.user.findUnique({
@@ -53,6 +55,11 @@ export class AuthService {
         return user
     }
 
+    async verifyEmail(token: string) : Promise<boolean> {
+        
+        return null
+    }
+
     async login (dto : LoginDTO) : Promise<LoginResponseDTO> {
         const exists = await this.prismaService.user.findFirst({
             where: {
@@ -68,7 +75,6 @@ export class AuthService {
         }
 
         const passwordMatch = await this.passwordsMatch(exists.password, dto.password)
-
         if(!passwordMatch){
             throw new UnauthorizedException("The password is incorrect")
         }
@@ -129,7 +135,6 @@ export class AuthService {
                 id
             }
         })
-
         if(!user){
             throw new NotFoundException("User not found")
         }
@@ -139,12 +144,11 @@ export class AuthService {
         if(!passwordMatch){
             throw new BadRequestException("Incorrect Password")
         }
-
         if(dto.newPassword !== dto.confirmPassword){
-            throw new BadRequestException("new password and cnofirm password does not match")
+            throw new BadRequestException("new password and confirm password does not match")
         }
 
-        const hashedPassword = await this.hashPassword(dto.newPassword)
+        const hashedPassword = await this.hashPassword(dto.confirmPassword)
 
         this.prismaService.user.update({
             where: {
@@ -154,11 +158,16 @@ export class AuthService {
                 password: hashedPassword
             }
         })
+        
 
         return "Password Updated Successfully"
     }
 
     async forgotPassword(dto : ForgotPasswordDTO) : Promise<string>{
+        return null
+    }
+
+    async verifyOtp(dto : verifyOtpDTO) : Promise<string>{
         return null
     }
 
@@ -177,7 +186,11 @@ export class AuthService {
             throw new NotFoundException("User not found")
         }
 
-        const hashedPassword = await this.hashPassword(dto.password)
+        if(dto.newPassword !== dto.confirmPassword){
+            throw new BadRequestException("new password and confirm password does not match")
+        }
+
+        const hashedPassword = await this.hashPassword(dto.newPassword)
 
         this.prismaService.user.update({
             where: {
@@ -200,6 +213,10 @@ export class AuthService {
         const currentDate = new Date()
         const expirationDate = new Date(currentDate.getTime() + (24 * 60 * 60 * 1000));
         // const otp = crypto.randomBytes()
+    }
+
+    public generateOtp() : string {
+        return null
     }
 
     public async hashPassword (password: string) {
