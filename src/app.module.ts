@@ -9,9 +9,10 @@ import { RolesGuard } from './guards/roles.guard';
 import { PrismaService } from './database/prisma.service';
 import { ConfigModule } from '@nestjs/config/dist';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { ProductModule } from './modules/product/product.module';
 
 @Module({
-  imports: [UserModule, ConfigModule.forRoot({
+  imports: [UserModule, ProductModule, ConfigModule.forRoot({
     isGlobal: true
   }), MailerModule.forRoot({
     transport: 'smtps://user@domain.com:pass@smtp.domain.com',

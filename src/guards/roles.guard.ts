@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { $Enums, RoleType } from "@prisma/client";
 import { PrismaService } from "src/database/prisma.service";
@@ -27,6 +27,10 @@ export class RolesGuard implements CanActivate{
                 id: user
             }
         })
+        if(!findUser){
+            throw new UnauthorizedException('Token Invalid or Expired')
+        }
+
         return requiredRoles.includes(findUser.role)
     }
 }

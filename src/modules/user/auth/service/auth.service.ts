@@ -4,7 +4,6 @@ import { RegisterDTO } from '../../dtos/RegisterDTO';
 import { OtpType, RoleType, User } from '@prisma/client';
 import * as bcrypt from "bcrypt"
 import * as jwt from "jsonwebtoken"
-import * as speakeasy from 'speakeasy';
 import {UnauthorizedException, ConflictException} from '@nestjs/common'
 import { LoginDTO } from '../../dtos/LoginDTO';
 import { LoginResponseDTO } from '../../dtos/LoginResponseDTO';

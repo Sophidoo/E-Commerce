@@ -89,13 +89,15 @@ CREATE TABLE "CartItems" (
 CREATE TABLE "Product" (
     "id" SERIAL NOT NULL,
     "productName" TEXT NOT NULL,
-    "productPrice" TEXT NOT NULL,
+    "productPrice" INTEGER NOT NULL,
     "quantityAvailable" INTEGER NOT NULL,
     "size" "Size" NOT NULL,
+    "description" TEXT,
+    "brand" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "categoryId" INTEGER NOT NULL,
-    "wishlistId" INTEGER NOT NULL,
+    "wishlistId" INTEGER,
 
     CONSTRAINT "Product_pkey" PRIMARY KEY ("id")
 );
@@ -236,6 +238,9 @@ CREATE UNIQUE INDEX "CartItems_productId_key" ON "CartItems"("productId");
 CREATE UNIQUE INDEX "Product_wishlistId_key" ON "Product"("wishlistId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Category_categoryName_key" ON "Category"("categoryName");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Audit_userId_key" ON "Audit"("userId");
 
 -- CreateIndex
@@ -263,7 +268,7 @@ ALTER TABLE "CartItems" ADD CONSTRAINT "CartItems_productId_fkey" FOREIGN KEY ("
 ALTER TABLE "Product" ADD CONSTRAINT "Product_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Product" ADD CONSTRAINT "Product_wishlistId_fkey" FOREIGN KEY ("wishlistId") REFERENCES "WishList"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Product" ADD CONSTRAINT "Product_wishlistId_fkey" FOREIGN KEY ("wishlistId") REFERENCES "WishList"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ProductImage" ADD CONSTRAINT "ProductImage_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

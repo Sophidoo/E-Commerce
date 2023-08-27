@@ -79,17 +79,19 @@ model CartItems {
 model Product {
   id                Int            @id @default(autoincrement())
   productName       String
-  productPrice      String
+  productPrice      Decimal
   quantityAvailable Int
   size              Size
+  description       String?
+  brand             String?
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
   productImages     ProductImage[]
   cartItems         CartItems?
   categoryId        Int
   category          Category       @relation(fields: [categoryId], references: [id])
-  wishlistId        Int            @unique
-  wishlist          WishList       @relation(fields: [wishlistId], references: [id])
+  wishlistId        Int?           @unique
+  wishlist          WishList?      @relation(fields: [wishlistId], references: [id])
   reviews           Reviews[]
 }
 
@@ -103,7 +105,7 @@ model ProductImage {
 
 model Category {
   id           Int       @id @default(autoincrement())
-  categoryName String
+  categoryName String @unique
   product      Product[]
 }
 
