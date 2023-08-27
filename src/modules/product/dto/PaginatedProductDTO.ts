@@ -9,5 +9,5 @@ export class PaginatedProductDTO{
     sortBy?: string
     sortDir?: string
     filterBy?: string
-    filterParam?: object | number | string
+    filterParam?: string
 }

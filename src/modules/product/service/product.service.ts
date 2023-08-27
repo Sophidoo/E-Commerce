@@ -139,10 +139,18 @@ export class ProductService {
     
     // pagination
     // query
-    async getAllProduct({pageNo, pageSize, sortBy, sortDir, filterBy, filterParam} : Pagination) : Promise<PaginatedProductDTO>{
+    async getAllProduct({pageNo, pageSize, sortBy, sortDir, filterBy, filterParam, filterKey, filterValue} : Pagination) : Promise<PaginatedProductDTO>{
         const orderBy: Prisma.ProductOrderByWithRelationInput = sortBy && sortDir ?  {[sortBy] : sortDir} : undefined
 
-        const where : Prisma.ProductWhereInput = filterBy && filterParam ? {[filterBy] : filterParam} : undefined
+        let where : Prisma.ProductWhereInput = undefined
+        if(filterBy === 'productPrice' ||filterBy ===  'id' || filterBy ===  'quantityAvailable'){
+            filterValue = Number(filterValue)
+        }
+        if(filterBy && filterParam ){
+            where =  {[filterBy] : filterParam}
+        }else if(filterKey && filterValue){
+            where  = {[filterBy] : {[filterKey]: filterValue}}
+        }
         const page = pageNo || 1
         const size = pageSize || 20
         const products = await this.prismaService.product.findMany({

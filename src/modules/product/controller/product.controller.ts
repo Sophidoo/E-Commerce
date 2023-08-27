@@ -38,10 +38,10 @@ export class ProductController {
     
     @Get()
     @Public()
-    getAllProducts(@Query('pageNo') pageNo? : number, @Query('pageSize') pageSize? : number, @Query('sortBy') sortBy? : string, @Query('sortDir') sortDir? : string, @Query('filterBy') filterBy? : string, @Query('filterParam') filterParam? : object | number | string,) : Promise<PaginatedProductDTO>{
-        return this.productService.getAllProduct({pageNo, pageSize, sortBy, sortDir, filterBy, filterParam})
+    getAllProducts(@Query('pageNo') pageNo? : number, @Query('pageSize') pageSize? : number, @Query('sortBy') sortBy? : string, @Query('sortDir') sortDir? : string, @Query('filterBy') filterBy? : string, @Query('filterParam') filterParam? : string, @Query('filterKey') filterKey? : string, @Query('filterValue') filterValue? : string) : Promise<PaginatedProductDTO>{
+        return this.productService.getAllProduct({pageNo, pageSize, sortBy, sortDir, filterBy, filterParam, filterKey, filterValue})
     }
-    
+
     @Public()
     @Get('/all')
     getAll() : Promise<ProductResponseDTO[]>{
