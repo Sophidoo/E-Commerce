@@ -207,7 +207,7 @@ export class AuthService {
             where: {
                 id
             },
-            select:{
+            include:{
                 address: true
             }
         })

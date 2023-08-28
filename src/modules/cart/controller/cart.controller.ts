@@ -33,10 +33,16 @@ export class CartController {
         return this.cartService.getAllCartItems(user)
     }
 
-    @Delete('/:cartItemId')
+    @Delete('/delete/:cartItemId')
     @Roles(RoleType.ADMIN, RoleType.USER)
     deleteCartItem(@Param('cartItemId') cartItemId: number){
         return this.cartService.deleteCartItem(cartItemId)
+    }
+
+    @Delete('/clearCart')
+    @Roles(RoleType.ADMIN, RoleType.USER)
+    clearCart(@User() user : number){
+        return this.cartService.clearCart(user)
     }
 
 }

@@ -125,7 +125,7 @@ export class CartService {
             throw new NotFoundException('Product no longer exists in database')
         }
 
-        if(productQuantityAvailable.quantityAvailable >= cartitem.quantity){
+        if(productQuantityAvailable.quantityAvailable == cartitem.quantity){
             throw new BadRequestException(`Only ${productQuantityAvailable.quantityAvailable} ${productQuantityAvailable.productName} are currently available`)
         }
 
@@ -135,9 +135,10 @@ export class CartService {
             },
             data: {
                 quantity: cartitem.quantity + 1,
-                subTotal: cartitem.subTotal.minus(productQuantityAvailable.productPrice) 
+                subTotal: cartitem.subTotal.add(productQuantityAvailable.productPrice) 
             }
         })
+
 
         const cartItems = await this.prismaService.cart.findUnique({
             where: {
@@ -155,7 +156,7 @@ export class CartService {
                 id: cartitem.cartId
             },
             data: {
-                cartTotal: total.add(productQuantityAvailable.productPrice),
+                cartTotal: total,
             }
         })
 
@@ -176,27 +177,17 @@ export class CartService {
             throw new NotFoundException(`Cart item with id = ${cartItemId} does not exist`)
         }
 
-        if(cartitem.quantity == 1){
-            await this.prismaService.cartItems.delete({
-                where: {
-                    id: cartItemId
-                }
-            })
-        }
-
         const cartItems = await this.prismaService.cart.findUnique({
             where: {
                 id: cartitem.cartId
             }
         }).cartItems()
 
-        const product = await this.prismaService.product.findUnique({
-            where: {
-                id: cartitem.productId
-            }
-        })
+        const total: Decimal = cartItems.reduce((a, cartItem) => {
+            return a.add(cartItem.subTotal);
+          }, new Decimal(0));
 
-        if(!product){
+        if(cartitem.quantity == 1){
             await this.prismaService.cartItems.delete({
                 where: {
                     id: cartItemId
@@ -207,16 +198,24 @@ export class CartService {
                     id: cartitem.cartId
                 },
                 data: {
-                   quantity: cartItems.length - 1
+                    quantity: cartItems.length -1,
+                    cartTotal: total.minus(cartitem.subTotal)
                 }
             })
+
+            return "Quantity decreased by 1"
+        }
+
+    
+        const product = await this.prismaService.product.findUnique({
+            where: {
+                id: cartitem.productId
+            }
+        })
+
+        if(!product){
             throw new NotFoundException('Product no longer exists in database')
         }
-        
-        const total: Decimal = cartItems.reduce((a, cartItem) => {
-            return a.add(cartItem.subTotal);
-          }, new Decimal(0));
-
 
         await this.prismaService.cart.update({
             where: {
@@ -292,7 +291,56 @@ export class CartService {
             }
         })
 
+        // Get all cart items in the user's cart
+        const cartItems = await this.prismaService.cart.findUnique({
+            where: {
+                id: cartitem.cartId
+            }
+        }).cartItems()
+
+        // caluclate the total of the cart items
+        const total: Decimal = cartItems.reduce((a, cartItem) => {
+            return a.add(cartItem.subTotal);
+        }, new Decimal(0));
+
+        // update the cart quantity and total
+        await this.prismaService.cart.update({
+            where: {
+                id: cartitem.cartId
+            },
+            data: {
+                cartTotal: total,
+                quantity: cartItems.length
+            }
+        })
+
         return "Cart item deleted successfully"
+    }
+
+    async clearCart(id: number) : Promise<string>{
+        const user = await this.prismaService.user.findUnique({
+            where: {
+                id
+            }
+        })
+
+        await this.prismaService.cartItems.deleteMany({
+            where: {
+                cartId: user.cartId
+            }
+        })
+
+        await this.prismaService.cart.update({
+            where: {
+                id: user.cartId
+            },
+            data: {
+                quantity: 0,
+                cartTotal: 0
+            }
+        })
+
+        return "Cart cleared successfully"
     }
 
     
