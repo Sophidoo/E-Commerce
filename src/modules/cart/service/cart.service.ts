@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Cart, CartItems } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 import { PrismaService } from 'src/database/prisma.service';
 
 @Injectable()
@@ -36,6 +37,12 @@ export class CartService {
             }
         })
 
+        const cartItems = await this.prismaService.cart.findUnique({
+            where: {
+                id: user.cartId
+            }
+        }).cartItems()
+
         let updateCart : CartItems;
 
         if(!productInCart){
@@ -48,7 +55,22 @@ export class CartService {
                 }
             })
 
-            // update cart total, quantity and subtotal
+            const total: Decimal = cartItems.reduce((a, cartItem) => {
+                return a.add(cartItem.subTotal);
+              }, new Decimal(0));
+
+            const cartQuantity = cartItems.length
+
+            await this.prismaService.cart.update({
+                where: {
+                    id: user.cartId
+                },
+                data: {
+                    cartTotal: total.add(product.productPrice),
+                    quantity: cartQuantity+1
+                }
+            })
+            
 
             return "Product added to cart sucessfully"
         }
@@ -63,7 +85,20 @@ export class CartService {
             }
         })
 
-        // update cart total, quantity and subtotal
+        const total: Decimal = cartItems.reduce((a, cartItem) => {
+            return a.add(cartItem.subTotal);
+          }, new Decimal(0));
+
+        const cartQuantity = cartItems.length
+
+        await this.prismaService.cart.update({
+            where: {
+                id: user.cartId
+            },
+            data: {
+                cartTotal: total.add(product.productPrice),
+            }
+        })
 
         return "Product added to cart sucessfully"
 
@@ -86,6 +121,10 @@ export class CartService {
             }
         })
 
+        if(!productQuantityAvailable){
+            throw new NotFoundException('Product no longer exists in database')
+        }
+
         if(productQuantityAvailable.quantityAvailable >= cartitem.quantity){
             throw new BadRequestException(`Only ${productQuantityAvailable.quantityAvailable} ${productQuantityAvailable.productName} are currently available`)
         }
@@ -95,7 +134,28 @@ export class CartService {
                 id: cartItemId
             },
             data: {
-                quantity: cartitem.quantity + 1
+                quantity: cartitem.quantity + 1,
+                subTotal: cartitem.subTotal.minus(productQuantityAvailable.productPrice) 
+            }
+        })
+
+        const cartItems = await this.prismaService.cart.findUnique({
+            where: {
+                id: cartitem.cartId
+            }
+        }).cartItems()
+        
+        const total: Decimal = cartItems.reduce((a, cartItem) => {
+            return a.add(cartItem.subTotal);
+          }, new Decimal(0));
+
+
+        await this.prismaService.cart.update({
+            where: {
+                id: cartitem.cartId
+            },
+            data: {
+                cartTotal: total.add(productQuantityAvailable.productPrice),
             }
         })
 
@@ -124,12 +184,56 @@ export class CartService {
             })
         }
 
+        const cartItems = await this.prismaService.cart.findUnique({
+            where: {
+                id: cartitem.cartId
+            }
+        }).cartItems()
+
+        const product = await this.prismaService.product.findUnique({
+            where: {
+                id: cartitem.productId
+            }
+        })
+
+        if(!product){
+            await this.prismaService.cartItems.delete({
+                where: {
+                    id: cartItemId
+                }
+            })
+            await this.prismaService.cart.update({
+                where: {
+                    id: cartitem.cartId
+                },
+                data: {
+                   quantity: cartItems.length - 1
+                }
+            })
+            throw new NotFoundException('Product no longer exists in database')
+        }
+        
+        const total: Decimal = cartItems.reduce((a, cartItem) => {
+            return a.add(cartItem.subTotal);
+          }, new Decimal(0));
+
+
+        await this.prismaService.cart.update({
+            where: {
+                id: cartitem.cartId
+            },
+            data: {
+                cartTotal: total.minus(product.productPrice),
+            }
+        })
+
         await this.prismaService.cartItems.update({
             where: {
                 id: cartItemId
             },
             data: {
-                quantity: cartitem.quantity - 1
+                quantity: cartitem.quantity - 1,
+                subTotal: cartitem.subTotal.minus(product.productPrice)
             }
         })
 
