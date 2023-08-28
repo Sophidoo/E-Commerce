@@ -48,6 +48,7 @@ export class CartService {
                 }
             })
 
+            // update cart total, quantity and subtotal
 
             return "Product added to cart sucessfully"
         }
@@ -62,19 +63,21 @@ export class CartService {
             }
         })
 
+        // update cart total, quantity and subtotal
+
         return "Product added to cart sucessfully"
 
     }
 
-    async increaseCartItemQuantity(id: number){
+    async increaseCartItemQuantity(cartItemId: number){
         const cartitem = await this.prismaService.cartItems.findUnique({
             where: {
-                id
+                id: cartItemId
             }
         })
 
         if(!cartitem){
-            throw new NotFoundException(`Cart item with id = ${id} does not exist`)
+            throw new NotFoundException(`Cart item with id = ${cartItemId} does not exist`)
         }
 
         const productQuantityAvailable = await this.prismaService.product.findUnique({
@@ -89,44 +92,48 @@ export class CartService {
 
         await this.prismaService.cartItems.update({
             where: {
-                id
+                id: cartItemId
             },
             data: {
                 quantity: cartitem.quantity + 1
             }
         })
 
+        // update cart total, quantity and subtotal
+
         return "Quantity increased by 1"
     }
 
 
-    async decreaseCartItemQuantity(id: number){
+    async decreaseCartItemQuantity(cartItemId: number){
         const cartitem = await this.prismaService.cartItems.findUnique({
             where: {
-                id
+                id: cartItemId
             }
         })
 
         if(!cartitem){
-            throw new NotFoundException(`Cart item with id = ${id} does not exist`)
+            throw new NotFoundException(`Cart item with id = ${cartItemId} does not exist`)
         }
 
         if(cartitem.quantity == 1){
             await this.prismaService.cartItems.delete({
                 where: {
-                    id
+                    id: cartItemId
                 }
             })
         }
 
         await this.prismaService.cartItems.update({
             where: {
-                id
+                id: cartItemId
             },
             data: {
                 quantity: cartitem.quantity - 1
             }
         })
+
+        // update cart total, quantity and subtotal
 
         return "Quantity decreased by 1"
     }
@@ -163,4 +170,26 @@ export class CartService {
 
         return cart
     }
+
+    async deleteCartItem(cartItemId: number) : Promise<string>{
+        const cartitem = await this.prismaService.cartItems.findUnique({
+            where: {
+                id: cartItemId
+            }
+        })
+
+        if(!cartitem){
+            throw new NotFoundException(`Cart item with id = ${cartItemId} does not exist`)
+        }
+
+        await this.prismaService.cartItems.delete({
+            where: {
+                id: cartItemId
+            }
+        })
+
+        return "Cart item deleted successfully"
+    }
+
+    
 }

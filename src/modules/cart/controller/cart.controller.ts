@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post } from '@nestjs/common';
+import { Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { CartService } from '../service/cart.service';
 import { User } from 'src/decorator/user.decorator';
 import { Roles } from 'src/decorator/roles.decorator';
@@ -15,16 +15,16 @@ export class CartController {
     }
 
 
-    @Get('/increase/:id')
+    @Get('/increase/:cartItemId')
     @Roles(RoleType.ADMIN, RoleType.USER)
-    increaseCartItemQuantity(@Param('id') id : number){
-        return this.cartService.increaseCartItemQuantity(id)
+    increaseCartItemQuantity(@Param('cartItemId') cartItemId : number){
+        return this.cartService.increaseCartItemQuantity(cartItemId)
     }
 
-    @Get('/decrease/:id')
+    @Get('/decrease/:cartItemId')
     @Roles(RoleType.ADMIN, RoleType.USER)
-    decreaseCartItemQuantity(@Param('id') id : number){
-        return this.cartService.decreaseCartItemQuantity(id)
+    decreaseCartItemQuantity(@Param('cartItemId') cartItemId : number){
+        return this.cartService.decreaseCartItemQuantity(cartItemId)
     }
 
     @Get()
@@ -33,5 +33,10 @@ export class CartController {
         return this.cartService.getAllCartItems(user)
     }
 
+    @Delete('/:cartItemId')
+    @Roles(RoleType.ADMIN, RoleType.USER)
+    deleteCartItem(@Param('cartItemId') cartItemId: number){
+        return this.cartService.deleteCartItem(cartItemId)
+    }
 
 }
