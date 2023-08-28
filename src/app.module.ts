@@ -10,9 +10,10 @@ import { PrismaService } from './database/prisma.service';
 import { ConfigModule } from '@nestjs/config/dist';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { ProductModule } from './modules/product/product.module';
+import { CartModule } from './modules/cart/cart.module';
 
 @Module({
-  imports: [UserModule, ProductModule, ConfigModule.forRoot({
+  imports: [UserModule, ProductModule, CartModule,ConfigModule.forRoot({
     isGlobal: true
   }), MailerModule.forRoot({
     transport: 'smtps://user@domain.com:pass@smtp.domain.com',
