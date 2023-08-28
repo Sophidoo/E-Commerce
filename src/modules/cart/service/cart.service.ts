@@ -104,6 +104,8 @@ export class CartService {
 
     }
 
+
+
     async increaseCartItemQuantity(cartItemId: number){
         const cartitem = await this.prismaService.cartItems.findUnique({
             where: {
@@ -164,6 +166,7 @@ export class CartService {
 
         return "Quantity increased by 1"
     }
+
 
 
     async decreaseCartItemQuantity(cartItemId: number){
@@ -241,6 +244,7 @@ export class CartService {
         return "Quantity decreased by 1"
     }
 
+
     async getAllCartItems(id: number) : Promise<Cart>{
         const user = await this.prismaService.user.findUnique({
             where: {
@@ -263,7 +267,24 @@ export class CartService {
                 _count: true,
                 cartItems: {
                     select: {
-                        product: true,
+                        product: {
+                            select: {
+                                productImages: true,
+                                productName: true,
+                                productPrice: true,
+                                brand: true,
+                                category: {
+                                    select: {
+                                        categoryName: true
+                                    }
+                                },
+                                description: true,
+                                createdAt: true,
+                                updatedAt: true,
+                                quantityAvailable: true,
+                                size: true
+                            }
+                        },
                         quantity: true,
                         subTotal: true
                     }
@@ -273,6 +294,8 @@ export class CartService {
 
         return cart
     }
+
+
 
     async deleteCartItem(cartItemId: number) : Promise<string>{
         const cartitem = await this.prismaService.cartItems.findUnique({
@@ -316,6 +339,7 @@ export class CartService {
 
         return "Cart item deleted successfully"
     }
+
 
     async clearCart(id: number) : Promise<string>{
         const user = await this.prismaService.user.findUnique({
