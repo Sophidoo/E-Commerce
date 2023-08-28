@@ -1,16 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
 import { ProductDTO } from '../dto/ProductDTO';
 import { ProductResponseDTO } from '../dto/ProductResponseDTO';
 import { plainToInstance } from 'class-transformer';
 import { EditProductDTO } from '../dto/EditProductDTO';
 import { Pagination } from 'src/interface/paginator';
-import { Prisma } from '@prisma/client';
+import { Prisma, ProductImage } from '@prisma/client';
 import { PaginatedProductDTO } from '../dto/PaginatedProductDTO';
+import { CloudinaryService } from 'src/config/cloudinary.service';
+import { ProductImageUploadDTO } from '../dto/ProductImageUploadDTO';
+import { ProductImageResponseDTO } from '../dto/ProductImageResponseDTO';
 
 @Injectable()
 export class ProductService {
-    constructor(private readonly prismaService : PrismaService){}
+    constructor(private readonly prismaService : PrismaService, private readonly cloudinaryService : CloudinaryService){}
 
     async addProduct(dto : ProductDTO) : Promise<ProductResponseDTO>{
         const product = await this.prismaService.product.create({
@@ -157,7 +160,10 @@ export class ProductService {
             take: size,
             skip: (page - 1) * size,
             orderBy,
-            where
+            where,
+            include: {
+                productImages: true
+            }
 
         })
 
@@ -177,19 +183,178 @@ export class ProductService {
     }
 
     async getAllProductWithoutPagination() : Promise<ProductResponseDTO[]> {
-        const products = await this.prismaService.product.findMany()
+        const products = await this.prismaService.product.findMany({
+            include: {
+                productImages: true
+            }
+        })
 
         return  products.map((product) => plainToInstance(ProductResponseDTO, product))
     }
 
 
-    async addproductImages(){}
+    async addproductImages(file : Express.Multer.File, id: number, dto: ProductImageUploadDTO ) : Promise<ProductImageResponseDTO>{
+        const result = await this.cloudinaryService.uploadFile(file)
+        
+        const product = await this.prismaService.product.findUnique({
+            where: {
+                id
+            }
+        })
+
+        if(!product){
+            throw new NotFoundException(`Product with that id = ${id} does not exist`)
+        }
+
+        if(!result){
+            throw new InternalServerErrorException("An error occured while uploading image to cloudinary")
+        }
+
+        if(dto.defaultImage){
+            const findDefaultImage = await this.prismaService.productImage.findFirst({
+                where: {
+                    AND: {
+                        productId: id,
+                        defaultImage: true
+                    }
+                }
+            })
+    
+            if(findDefaultImage){
+                await this.prismaService.productImage.update({
+                    where: {
+                        id: findDefaultImage.id
+                    },
+                    data: {
+                        defaultImage: false
+                    }
+                })
+            }
+        }
+        
+        const productImage = await this.prismaService.productImage.create({
+            data: {
+                imageUrl: result.url,
+                productId: id,
+                defaultImage: dto.defaultImage
+            },
+            select: {
+                product: {
+                    select: {
+                        productName: true,
+                        productPrice: true,
+                        brand: true,
+                        description: true,
+                        quantityAvailable: true,
+                        size: true,
+                        category: {
+                            select: {
+                                categoryName: true
+                            }
+                        }
+                    }
+                },
+                imageUrl: true,
+                defaultImage: true
+            }
+        })
+
+        return plainToInstance(ProductImageResponseDTO, productImage)
+        
+    }
 
 
-    async editProductImages(){}
+    async editProductImages(file: Express.Multer.File, id: number, dto: ProductImageUploadDTO) : Promise<ProductImageResponseDTO>{
+        const result = await this.cloudinaryService.uploadFile(file)
+        
+        const image = await this.prismaService.productImage.findUnique({
+            where: {
+                id
+            }
+        })
+
+        if(!image){
+            throw new NotFoundException(`Product Image with that id = ${id} does not exist`)
+        }
+
+        if(!result){
+            throw new InternalServerErrorException("An error occured while uploading image to cloudinary")
+        }
+
+        if(dto.defaultImage){
+            const findDefaultImage = await this.prismaService.productImage.findFirst({
+                where: {
+                    AND: {
+                        productId: id,
+                        defaultImage: true
+                    }
+                }
+            })
+    
+            if(findDefaultImage){
+                await this.prismaService.productImage.update({
+                    where: {
+                        id: findDefaultImage.id
+                    },
+                    data: {
+                        defaultImage: false
+                    }
+                })
+            }
+        }
+        
+        const productImage = await this.prismaService.productImage.update({
+            where: {
+                id,
+            },
+            data: {
+                imageUrl: result.url,
+                defaultImage: dto.defaultImage
+            },
+            select: {
+                product: {
+                    select: {
+                        productName: true,
+                        productPrice: true,
+                        brand: true,
+                        description: true,
+                        quantityAvailable: true,
+                        size: true,
+                        category: {
+                            select: {
+                                categoryName: true
+                            }
+                        }
+                    }
+                },
+                imageUrl: true,
+                defaultImage: true
+            }
+        })
+
+        return plainToInstance(ProductImageResponseDTO, productImage)
+    }
 
 
-    async deleteProductImage(){}
+    async deleteProductImage(id: number) : Promise<string>{
+        const image = await this.prismaService.productImage.findUnique({
+            where: {
+                id
+            }
+        })
+
+        if(!image){
+            throw new NotFoundException(`Product Image with that id = ${id} does not exist`)
+        }
+
+        await this.prismaService.productImage.delete({
+            where: {
+                id
+            }
+        })
+
+        return "Product image deleted successfully"
+    }
 
 
 }

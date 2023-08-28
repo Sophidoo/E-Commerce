@@ -6,11 +6,15 @@ import { OtpModule } from '../otp/otp.module';
 import { MailModule } from '../mail/mail.module';
 import { GoogleStrategyService } from './auth/service/google-strategy.service';
 import { GoogleStrategyController } from './auth/controller/google-strategy.controller';
+import { CloudinaryService } from 'src/config/cloudinary.service';
+import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
     controllers: [AuthController, GoogleStrategyController],
-    providers: [AuthService, GoogleStrategyService],
-    imports: [PrismaModule, OtpModule, MailModule]
+    providers: [AuthService, GoogleStrategyService, CloudinaryService],
+    imports: [PrismaModule, OtpModule, MailModule, MulterModule.register({
+        dest: "/profile"
+    })]
 })
 
 export class UserModule {}

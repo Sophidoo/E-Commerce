@@ -3,10 +3,15 @@ import { ProductService } from './service/product.service';
 import { PrismaService } from 'src/database/prisma.service';
 import { ProductController } from './controller/product.controller';
 import { PrismaModule } from 'src/database/prisma.module';
+import { CloudinaryService } from 'src/config/cloudinary.service';
+import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
   controllers: [ProductController],
-  providers: [ProductService],
-  imports: [PrismaModule]
+  providers: [ProductService, CloudinaryService],
+  imports: [PrismaModule, 
+    MulterModule.register({
+      dest: './products', // Set your desired upload directory
+    })]
 })
 export class ProductModule {}

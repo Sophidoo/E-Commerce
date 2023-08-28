@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Delete,Put, UseGuards, Req } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Delete,Put, UseGuards, Req, HttpStatus, ParseFilePipeBuilder, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { AuthService } from '../service/auth.service';
 import { RegisterDTO } from '../../dtos/RegisterDTO';
 import { LoginDTO } from '../../dtos/LoginDTO';
@@ -10,6 +10,8 @@ import { $Enums, RoleType } from '@prisma/client';
 import { UserResponseDTO } from '../../dtos/UserResponseDTO';
 import { UpdateUserDTO } from '../../dtos/UpdateUserDTO';
 import { LoginResponseDTO } from '../../dtos/LoginResponseDTO';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { use } from 'passport';
 
 @Controller('api/v1/auth')
 export class AuthController {
@@ -88,6 +90,21 @@ export class AuthController {
     @Get('/verificationMail/:email')
     resendVerificationMail(@Param('email') email : string){
         return this.authService.resendEmailOtp(email)
+    }
+
+    @Put('/upload')
+    @Roles(RoleType.ADMIN, RoleType.USER)
+    @UseInterceptors(FileInterceptor('file'))
+    uploadProfile(@UploadedFile(
+        new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+            fileType:  /(jpg|jpeg|png|gif)$/
+        })
+        .build({
+            errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY
+        })
+    ) file: Express.Multer.File, @User() user: number){
+        return this.authService.uploadProfile(file, user)
     }
 
 }

@@ -17,12 +17,13 @@ import { UpdateUserDTO } from '../../dtos/UpdateUserDTO';
 import {google, Auth} from 'googleapis'
 import {ConfigService} from '@nestjs/config'
 import { plainToInstance } from 'class-transformer';
+import { CloudinaryService } from 'src/config/cloudinary.service';
 
 @Injectable()
 export class AuthService {
     oAuthClient : Auth.OAuth2Client
 
-    constructor(private readonly prismaService : PrismaService, private readonly otpService : OtpService, private readonly mailService: MailService, private readonly configService : ConfigService) {
+    constructor(private readonly prismaService : PrismaService, private readonly otpService : OtpService, private readonly mailService: MailService, private readonly configService : ConfigService, private readonly cloudinaryService: CloudinaryService) {
         this.oAuthClient = new google.auth.OAuth2(
             process.env.CLIENT_ID,
             process.env.CLIENT_SECRET
@@ -75,10 +76,39 @@ export class AuthService {
         }catch(e){
             throw new InternalServerErrorException(e)
         }
-        //TODO: create Email verification 
 
 
         return "Otp has been sent to your email, Please verify your account"
+    }
+
+
+    async uploadProfile(file: Express.Multer.File, id: number) : Promise<UserResponseDTO>{
+        const result = await this.cloudinaryService.uploadFile(file)
+
+        const profile = await this.prismaService.user.findUnique({
+            where: {
+                id
+            }
+        })
+
+        if(!profile){
+            throw new NotFoundException("User does not exist")
+        }
+
+        const profileImage = await this.prismaService.user.update({
+            where: {
+                id
+            },
+            data: {
+                image: result.url
+            },
+            select: {
+                image: true
+            }
+        })
+
+        return plainToInstance(UserResponseDTO, profileImage)
+
     }
 
    
