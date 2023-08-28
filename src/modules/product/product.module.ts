@@ -11,7 +11,7 @@ import { MulterModule } from '@nestjs/platform-express';
   providers: [ProductService, CloudinaryService],
   imports: [PrismaModule, 
     MulterModule.register({
-      dest: './products', // Set your desired upload directory
+      dest: './uploads', // Set your desired upload directory
     })]
 })
 export class ProductModule {}

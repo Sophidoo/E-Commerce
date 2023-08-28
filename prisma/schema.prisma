@@ -25,8 +25,7 @@ model User {
   gender           String?
   image            String?
   role             RoleType
-  addressId        Int?               @unique
-  address          Address?           @relation(fields: [addressId], references: [id])
+  address          Address[]           
   cartId           Int                @unique
   cart             Cart               @relation(fields: [cartId], references: [id])
   order            Order[]
@@ -55,7 +54,8 @@ model Address {
   state                    String
   country                  String
   isDefaultShippingAddress Boolean
-  user                     User?
+  userId                   Int
+  user                     User @relation(fields: [userId], references: [id])
 }
 
 model Cart {
