@@ -54,10 +54,13 @@ export class ReviewsService {
         return plainToInstance(ReviewResponseDTO, review)
     }
 
-    async getAllProductReviews(productId: number, pageSize : number, pageNo: number) : Promise<ReviewResponseDTO[]> {
+    async getAllProductReviews(productId: number, pageSize? : number, pageNo? : number) : Promise<ReviewResponseDTO[]> {
         const page = pageNo || 1
         const size = pageSize || 20
         const reviews = await this.prismaService.reviews.findMany({
+            where: {
+                productId : productId
+            },
             take: size,
             skip: (page - 1) * size,
             orderBy: {
