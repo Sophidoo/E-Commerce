@@ -90,8 +90,7 @@ model Product {
   cartItems         CartItems?
   categoryId        Int
   category          Category       @relation(fields: [categoryId], references: [id])
-  wishlistId        Int?           @unique
-  wishlist          WishList?      @relation(fields: [wishlistId], references: [id])
+  wishlist          WishList[]    
   reviews           Reviews[]
 }
 

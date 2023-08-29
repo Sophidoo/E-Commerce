@@ -2,10 +2,9 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { find } from 'rxjs';
 import { PrismaService } from 'src/database/prisma.service';
-import { Pagination } from 'src/interface/paginator';
 import { PaginatedWishlistDTO } from '../dto/PaginatedWishListDTO';
-import { WishListResponseDTO } from '../dto/WishlistResponseDTO';
 import { plainToInstance } from 'class-transformer';
+import { Pagination } from '../dto/Pagination';
 
 @Injectable()
 export class WishlistService {
@@ -134,16 +133,38 @@ export class WishlistService {
             where: {
                 id:user.wishlistId
             },
-            include: {
+            select: {
+                id: true,
                 product: {
+                    take: size,
+                     skip: (page - 1) * size,
+                    orderBy,
                     where: {
                         productName: {
                             contains: filterParam
                         }
                     },
-                    take: size,
-                    skip: (page - 1) * size,
-                    orderBy,
+                    select: {
+                        id: true,
+                        productName: true,
+                        productImages: {
+                            select: {
+                                imageUrl: true
+                            }
+                        },
+                        productPrice: true,
+                        quantityAvailable: true,
+                        brand: true,
+                        size: true,
+                        description: true,
+                        category: {
+                            select: {
+                                categoryName: true
+                            }
+                        },
+                        createdAt: true,
+                        updatedAt: true
+                    }
                 }
             }
 
@@ -160,8 +181,8 @@ export class WishlistService {
         }).product()
 
         const result = new PaginatedWishlistDTO()
-        result.data = plainToInstance(WishListResponseDTO, wishlistProducts)
-        result.filterBy = "Produt Name"
+        result.data = wishlistProducts
+        result.filterBy = "Product Name"
         result.filterParam = filterParam
         result.sortBy = sortBy
         result.sortDir = sortDir

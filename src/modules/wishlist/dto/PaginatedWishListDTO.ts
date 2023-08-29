@@ -1,9 +1,8 @@
 import { WishList } from "@prisma/client";
-import { WishListResponseDTO } from "./WishlistResponseDTO";
 
 
 export class PaginatedWishlistDTO{
-    data?: WishListResponseDTO
+    data?: WishList
     totalPages? : number
     pageSize? : number
     pageNo?: number

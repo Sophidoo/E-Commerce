@@ -1,7 +1,13 @@
 import { $Enums } from '@prisma/client'
-import {Exclude, Expose} from 'class-transformer'
+import { Decimal } from '@prisma/client/runtime/library'
+import {Exclude, Expose, Transform, Type} from 'class-transformer'
 
-// @Exclude()
+
+export class DecimalNumber extends Decimal {
+    constructor(value = 0) { super(value); }
+}
+   
+@Exclude()
 export class ProductResponseDTO {
     @Expose()
     id: number
@@ -10,7 +16,8 @@ export class ProductResponseDTO {
     productName : string
 
     @Expose()
-    productPrice : number
+    @Type(() => DecimalNumber)
+    productPrice : DecimalNumber
 
     @Expose()
     quantityAvailable: number

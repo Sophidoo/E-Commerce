@@ -1,4 +1,5 @@
 import { $Enums } from "@prisma/client"
+import { Decimal } from "@prisma/client/runtime/library"
 import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString} from "class-validator"
 
 export class ProductDTO {
@@ -6,7 +7,6 @@ export class ProductDTO {
     @IsString()
     productName : string
     @IsNotEmpty()
-    @IsNumber()
     productPrice : number
     @IsNumber()
     @IsNotEmpty()
