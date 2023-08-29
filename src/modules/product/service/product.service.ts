@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
 import { ProductDTO } from '../dto/ProductDTO';
 import { ProductResponseDTO } from '../dto/ProductResponseDTO';
@@ -360,8 +360,14 @@ export class ProductService {
     }
 
     async addCategory(dto: CategoryDTO) : Promise<CategoryResponseDTO | string>{
-        if(this.findByCategoryName(dto)){
-            return "Category already exists"
+        const findCategory = await this.prismaService.category.findUnique({
+            where: {
+                categoryName: dto.categoryName
+            }
+        })
+
+        if(findCategory){
+            throw new ConflictException('Category Already exists')
         }
 
         const category = await this.prismaService.category.create({
@@ -384,6 +390,16 @@ export class ProductService {
             throw new NotFoundException('Category not found')
         }
 
+        const findCategory = await this.prismaService.category.findUnique({
+            where: {
+                categoryName: dto.categoryName
+            }
+        })
+
+        if(findCategory){
+            throw new ConflictException('Category with that name already exists')
+        }
+
         const update= await this.prismaService.category.update({
             where:{
                 id: categoryId
@@ -393,7 +409,7 @@ export class ProductService {
             }
         })
 
-        return plainToInstance(CategoryResponseDTO, category)
+        return plainToInstance(CategoryResponseDTO, update)
     }
 
     async getAllCategories() : Promise<CategoryResponseDTO[]>{
@@ -402,10 +418,10 @@ export class ProductService {
         return categories.map((category) => plainToInstance(CategoryResponseDTO, category))
     }
 
-    async findByCategoryName(dto: CategoryDTO) : Promise<CategoryResponseDTO>{
+    async findByCategoryName(categoryName: string) : Promise<CategoryResponseDTO>{
         const category = await this.prismaService.category.findUnique({
             where: {
-                categoryName: dto.categoryName
+                categoryName
             }
         })
 
