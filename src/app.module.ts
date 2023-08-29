@@ -13,9 +13,11 @@ import { ProductModule } from './modules/product/product.module';
 import { CartModule } from './modules/cart/cart.module';
 import { AddressModule } from './modules/address/address.module';
 import { WishlistModule } from './modules/wishlist/wishlist.module';
+import { AuditModule } from './modules/audit/audit.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
 
 @Module({
-  imports: [UserModule, ProductModule, CartModule, AddressModule, WishlistModule, ConfigModule.forRoot({
+  imports: [UserModule, ProductModule, CartModule, AddressModule, WishlistModule, ReviewsModule, AuditModule, ConfigModule.forRoot({
     isGlobal: true
   }), MailerModule.forRoot({
     transport: 'smtps://user@domain.com:pass@smtp.domain.com',

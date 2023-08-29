@@ -136,7 +136,7 @@ model WishList {
 model Reviews {
   id        Int      @id @default(autoincrement())
   rating    Decimal
-  feedback  String
+  feedback  String?
   productId Int
   product   Product  @relation(fields: [productId], references: [id])
   userId    Int

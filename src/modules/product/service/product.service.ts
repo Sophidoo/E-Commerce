@@ -13,12 +13,15 @@ import { ProductImageResponseDTO } from '../dto/ProductImageResponseDTO';
 import { CategoryDTO } from '../dto/CategoryDTO';
 import { CategoryResponseDTO } from '../dto/CategoryResponseDTO';
 import { retry } from 'rxjs';
+import { AuditService } from 'src/modules/audit/service/audit.service';
+import { AuditDTO } from 'src/modules/audit/dto/AuditDTO';
+import { User } from 'src/decorator/user.decorator';
 
 @Injectable()
 export class ProductService {
-    constructor(private readonly prismaService : PrismaService, private readonly cloudinaryService : CloudinaryService){}
+    constructor(private readonly prismaService : PrismaService, private readonly cloudinaryService : CloudinaryService, private readonly auditService: AuditService){}
 
-    async addProduct(dto : ProductDTO) : Promise<ProductResponseDTO>{
+    async addProduct(dto : ProductDTO, id: number) : Promise<ProductResponseDTO>{
         const product = await this.prismaService.product.create({
             data: {
                 productName: dto.productName,
@@ -40,10 +43,22 @@ export class ProductService {
             }
         })
 
+        const audit = new AuditDTO
+        audit.action = 'CREATE'
+        audit.createdAt = new Date()
+        audit.oldData = {}
+        audit.newData = {
+            ...dto
+        }
+        audit.recordId = product.id
+        audit.tableName = "Product"
+        audit.userId = id
+        await this.auditService.addToAudit(audit)
+
         return plainToInstance(ProductResponseDTO, product)
     }
 
-    async editProduct(id : number, dto: EditProductDTO) : Promise<ProductResponseDTO>{
+    async editProduct(id : number, dto: EditProductDTO, userId : number) : Promise<ProductResponseDTO>{
         const findProduct = await this.prismaService.product.findUnique({
             where: {
                 id
@@ -78,6 +93,21 @@ export class ProductService {
                 description: dto.description
             }
         })
+
+        
+        const audit = new AuditDTO
+        audit.action = 'UPDATE'
+        audit.createdAt = new Date()
+        audit.oldData = {
+            ...findProduct
+        }
+        audit.newData = {
+            ...dto
+        }
+        audit.recordId = product.id
+        audit.tableName = "Product"
+        audit.userId = userId
+        await this.auditService.addToAudit(audit)
 
         return plainToInstance(ProductResponseDTO, product)
     }
@@ -119,7 +149,7 @@ export class ProductService {
         return plainToInstance(ProductResponseDTO, findProduct)
     }
 
-    async deleteProduct(id : number) : Promise<string>{
+    async deleteProduct(id : number, userId : number) : Promise<string>{
         const findProduct = await this.prismaService.product.findUnique({
             where: {
                 id
@@ -135,6 +165,19 @@ export class ProductService {
                 id
             }
         })
+
+        const audit = new AuditDTO
+        audit.action = 'DELETE'
+        audit.createdAt = new Date()
+        audit.oldData = {
+            ...findProduct
+        }
+        audit.newData = {}
+        audit.recordId = findProduct.id
+        audit.tableName = "Product"
+        audit.userId = userId
+        await this.auditService.addToAudit(audit)
+
 
         return "Product Successfully Deleted"
 
@@ -196,7 +239,7 @@ export class ProductService {
     }
 
 
-    async addproductImages(file : Express.Multer.File, id: number, dto: ProductImageUploadDTO ) : Promise<ProductImageResponseDTO>{
+    async addproductImages(file : Express.Multer.File, id: number, dto: ProductImageUploadDTO, userId : number ) : Promise<ProductImageResponseDTO>{
         const result = await this.cloudinaryService.uploadFile(file)
         
         const product = await this.prismaService.product.findUnique({
@@ -242,8 +285,10 @@ export class ProductService {
                 defaultImage: dto.defaultImage
             },
             select: {
+                id: true,
                 product: {
                     select: {
+                        id: true,
                         productName: true,
                         productPrice: true,
                         brand: true,
@@ -262,12 +307,25 @@ export class ProductService {
             }
         })
 
+        const audit = new AuditDTO
+        audit.action = 'CREATE'
+        audit.createdAt = new Date()
+        audit.oldData = {}
+        audit.newData = {
+            ...productImage
+        }
+        audit.recordId = productImage.id
+        audit.tableName = "Product Image"
+        audit.userId = userId
+        await this.auditService.addToAudit(audit)
+
+
         return plainToInstance(ProductImageResponseDTO, productImage)
         
     }
 
 
-    async editProductImages(file: Express.Multer.File, id: number, dto: ProductImageUploadDTO) : Promise<ProductImageResponseDTO>{
+    async editProductImages(file: Express.Multer.File, id: number, dto: ProductImageUploadDTO, userId : number) : Promise<ProductImageResponseDTO>{
         const result = await this.cloudinaryService.uploadFile(file)
         
         const image = await this.prismaService.productImage.findUnique({
@@ -283,6 +341,7 @@ export class ProductService {
         if(!result){
             throw new InternalServerErrorException("An error occured while uploading image to cloudinary")
         }
+
 
         if(dto.defaultImage){
             const findDefaultImage = await this.prismaService.productImage.findFirst({
@@ -315,8 +374,10 @@ export class ProductService {
                 defaultImage: dto.defaultImage
             },
             select: {
+                id: true,
                 product: {
                     select: {
+                        id: true,
                         productName: true,
                         productPrice: true,
                         brand: true,
@@ -335,11 +396,27 @@ export class ProductService {
             }
         })
 
+    
+
+        const audit = new AuditDTO
+        audit.action = 'UPDATE'
+        audit.createdAt = new Date()
+        audit.oldData = {
+            ...image
+        }
+        audit.newData = {
+            ...productImage
+        }
+        audit.recordId = productImage.id
+        audit.tableName = "Product Image"
+        audit.userId = userId
+        await this.auditService.addToAudit(audit)
+
         return plainToInstance(ProductImageResponseDTO, productImage)
     }
 
 
-    async deleteProductImage(id: number) : Promise<string>{
+    async deleteProductImage(id: number, userId : number) : Promise<string>{
         const image = await this.prismaService.productImage.findUnique({
             where: {
                 id
@@ -356,10 +433,22 @@ export class ProductService {
             }
         })
 
+        const audit = new AuditDTO
+        audit.action = 'DELETE'
+        audit.createdAt = new Date()
+        audit.oldData = {
+            ...image
+        }
+        audit.newData = {}
+        audit.recordId = image.id
+        audit.tableName = "Product Image"
+        audit.userId = userId
+        await this.auditService.addToAudit(audit)
+
         return "Product image deleted successfully"
     }
 
-    async addCategory(dto: CategoryDTO) : Promise<CategoryResponseDTO | string>{
+    async addCategory(dto: CategoryDTO, userId : number) : Promise<CategoryResponseDTO | string>{
         const findCategory = await this.prismaService.category.findUnique({
             where: {
                 categoryName: dto.categoryName
@@ -376,10 +465,22 @@ export class ProductService {
             }
         })
 
+        const audit = new AuditDTO
+        audit.action = 'CREATE'
+        audit.createdAt = new Date()
+        audit.oldData = {}
+        audit.newData = {
+            ...dto
+        }
+        audit.recordId = category.id
+        audit.tableName = "Category"
+        audit.userId = userId
+        await this.auditService.addToAudit(audit)
+
         return plainToInstance(CategoryResponseDTO, category)
     }
 
-    async editCategory(dto: CategoryDTO, categoryId : number) : Promise<CategoryResponseDTO | string>{
+    async editCategory(dto: CategoryDTO, categoryId : number, userId: number) : Promise<CategoryResponseDTO | string>{
         const category = await this.prismaService.category.findUnique({
             where: {
                 id: categoryId
@@ -409,6 +510,20 @@ export class ProductService {
             }
         })
 
+        const audit = new AuditDTO
+        audit.action = 'UPDATE'
+        audit.createdAt = new Date()
+        audit.oldData = {
+            ...category
+        }
+        audit.newData = {
+            ...dto
+        }
+        audit.recordId = update.id
+        audit.tableName = "Category"
+        audit.userId = userId
+        await this.auditService.addToAudit(audit)
+
         return plainToInstance(CategoryResponseDTO, update)
     }
 
@@ -432,7 +547,7 @@ export class ProductService {
         return plainToInstance(CategoryResponseDTO, category)
     }
 
-    async deleteCategory(categoryId : number) : Promise<string>{
+    async deleteCategory(categoryId : number, userId : number) : Promise<string>{
         const category = await this.prismaService.category.findUnique({
             where: {
                 id: categoryId
@@ -455,6 +570,18 @@ export class ProductService {
                 id: categoryId
             }
         })
+
+        const audit = new AuditDTO
+        audit.action = 'DELETE'
+        audit.createdAt = new Date()
+        audit.oldData = {
+            ...category
+        }
+        audit.newData = {}
+        audit.recordId = category.id
+        audit.tableName = "Category"
+        audit.userId = userId
+        await this.auditService.addToAudit(audit)
 
         return "Category deleted successflly"
 

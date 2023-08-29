@@ -11,6 +11,7 @@ import { AnyFilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express';
 import { ProductImageUploadDTO } from '../dto/ProductImageUploadDTO';
 import { CategoryDTO } from '../dto/CategoryDTO';
+import { User } from 'src/decorator/user.decorator';
 
 @Controller('api/v1/product')
 export class ProductController {
@@ -18,22 +19,22 @@ export class ProductController {
 
     @Roles(RoleType.ADMIN)
     @Post()
-    addProduct(@Body() dto: ProductDTO) : Promise<ProductResponseDTO>{
-        return this.productService.addProduct(dto)
+    addProduct(@Body() dto: ProductDTO , @User() user : number) : Promise<ProductResponseDTO>{
+        return this.productService.addProduct(dto, user)
     }
 
 
     @Roles(RoleType.ADMIN)
     @Patch('/:id')
-    editProduct(@Body() dto: EditProductDTO, @Param('id') id: number) : Promise<ProductResponseDTO>{
-        return this.productService.editProduct(id, dto)
+    editProduct(@Body() dto: EditProductDTO, @Param('id') id: number , @User() user : number) : Promise<ProductResponseDTO>{
+        return this.productService.editProduct(id, dto, user)
     }
 
     
     @Roles(RoleType.ADMIN)
     @Delete('/:id')
-    deleteProduct(@Param('id') id: number) : Promise<string>{
-        return this.productService.deleteProduct(id)
+    deleteProduct(@Param('id') id: number, @User() user : number) : Promise<string>{
+        return this.productService.deleteProduct(id, user)
     }
 
 
@@ -69,8 +70,8 @@ export class ProductController {
         .build({
             errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY
         })
-    ) file: Express.Multer.File, @Param('id') id:number, @Body() dto: ProductImageUploadDTO){
-       return this.productService.addproductImages(file, id, dto)
+    ) file: Express.Multer.File, @Param('id') id:number, @Body() dto: ProductImageUploadDTO, @User() user : number){
+       return this.productService.addproductImages(file, id, dto, user)
     }
 
 
@@ -85,29 +86,29 @@ export class ProductController {
         .build({
             errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY
         })
-    ) file: Express.Multer.File, @Param('id') id:number, @Body() dto: ProductImageUploadDTO){
-       return this.productService.editProductImages(file, id, dto)
+    ) file: Express.Multer.File, @Param('id') id:number, @Body() dto: ProductImageUploadDTO, @User() user : number){
+       return this.productService.editProductImages(file, id, dto, user)
     }
 
 
     @Delete('/deleteImage/:id')
     @Roles(RoleType.ADMIN)
-    deleteIMage(@Param('id') id: number)    {
-        return this.productService.deleteProductImage(id)
+    deleteIMage(@Param('id') id: number, @User() user : number)    {
+        return this.productService.deleteProductImage(id, user)
     }
 
 
     @Post('/category')
     @Roles(RoleType.ADMIN)
-    addCategory(@Body() dto : CategoryDTO){
-        return this.productService.addCategory(dto)
+    addCategory(@Body() dto : CategoryDTO, @User() user : number){
+        return this.productService.addCategory(dto, user)
     }
 
 
     @Put('/category/:categoryId')
     @Roles(RoleType.ADMIN)
-    editCategory(@Body() dto: CategoryDTO, @Param('categoryId') categoryId: number){
-        return this.productService.editCategory(dto, categoryId)
+    editCategory(@Body() dto: CategoryDTO, @Param('categoryId') categoryId: number, @User() user : number){
+        return this.productService.editCategory(dto, categoryId, user)
     }
 
 
@@ -127,8 +128,8 @@ export class ProductController {
 
     @Delete('/category/:categoryId')
     @Roles(RoleType.ADMIN)
-    deleteEmptyCategory(@Param('categoryId') categoryId : number){
-        return this.productService.deleteCategory(categoryId)
+    deleteEmptyCategory(@Param('categoryId') categoryId : number, @User() user : number){
+        return this.productService.deleteCategory(categoryId, user)
     }
     
 }

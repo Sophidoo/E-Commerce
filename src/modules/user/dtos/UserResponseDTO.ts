@@ -2,6 +2,8 @@ import { Exclude , Expose} from "class-transformer"
 
 @Exclude()
 export class UserResponseDTO {
+    @Expose()
+    id: number
 
     @Expose()
     firstname: string
