@@ -12,9 +12,10 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 import { ProductModule } from './modules/product/product.module';
 import { CartModule } from './modules/cart/cart.module';
 import { AddressModule } from './modules/address/address.module';
+import { WishlistModule } from './modules/wishlist/wishlist.module';
 
 @Module({
-  imports: [UserModule, ProductModule, CartModule, AddressModule, ConfigModule.forRoot({
+  imports: [UserModule, ProductModule, CartModule, AddressModule, WishlistModule, ConfigModule.forRoot({
     isGlobal: true
   }), MailerModule.forRoot({
     transport: 'smtps://user@domain.com:pass@smtp.domain.com',

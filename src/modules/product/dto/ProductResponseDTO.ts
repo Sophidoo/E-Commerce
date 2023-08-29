@@ -3,6 +3,8 @@ import {Exclude, Expose} from 'class-transformer'
 
 // @Exclude()
 export class ProductResponseDTO {
+    @Expose()
+    id: number
 
     @Expose()
     productName : string

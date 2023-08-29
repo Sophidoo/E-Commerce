@@ -10,6 +10,9 @@ import { PaginatedProductDTO } from '../dto/PaginatedProductDTO';
 import { CloudinaryService } from 'src/config/cloudinary.service';
 import { ProductImageUploadDTO } from '../dto/ProductImageUploadDTO';
 import { ProductImageResponseDTO } from '../dto/ProductImageResponseDTO';
+import { CategoryDTO } from '../dto/CategoryDTO';
+import { CategoryResponseDTO } from '../dto/CategoryResponseDTO';
+import { retry } from 'rxjs';
 
 @Injectable()
 export class ProductService {
@@ -355,6 +358,93 @@ export class ProductService {
 
         return "Product image deleted successfully"
     }
+
+    async addCategory(dto: CategoryDTO) : Promise<CategoryResponseDTO | string>{
+        if(this.findByCategoryName(dto)){
+            return "Category already exists"
+        }
+
+        const category = await this.prismaService.category.create({
+            data: {
+                ...dto
+            }
+        })
+
+        return plainToInstance(CategoryResponseDTO, category)
+    }
+
+    async editCategory(dto: CategoryDTO, categoryId : number) : Promise<CategoryResponseDTO | string>{
+        const category = await this.prismaService.category.findUnique({
+            where: {
+                id: categoryId
+            }
+        })
+
+        if(!category){
+            throw new NotFoundException('Category not found')
+        }
+
+        const update= await this.prismaService.category.update({
+            where:{
+                id: categoryId
+            },
+            data: {
+                categoryName: dto.categoryName
+            }
+        })
+
+        return plainToInstance(CategoryResponseDTO, category)
+    }
+
+    async getAllCategories() : Promise<CategoryResponseDTO[]>{
+        const categories = await this.prismaService.category.findMany()
+
+        return categories.map((category) => plainToInstance(CategoryResponseDTO, category))
+    }
+
+    async findByCategoryName(dto: CategoryDTO) : Promise<CategoryResponseDTO>{
+        const category = await this.prismaService.category.findUnique({
+            where: {
+                categoryName: dto.categoryName
+            }
+        })
+
+        if(!category){
+            throw new NotFoundException('Category not found')
+        }
+
+        return plainToInstance(CategoryResponseDTO, category)
+    }
+
+    async deleteCategory(categoryId : number) : Promise<string>{
+        const category = await this.prismaService.category.findUnique({
+            where: {
+                id: categoryId
+            },
+            include: {
+                product: true
+            }
+        })
+
+        if(!category){
+            throw new NotFoundException('Category not found')
+        }
+
+        if(category.product.length !== 0){
+            return "Can not delete category because some products belong to this category"
+        }
+
+        await this.prismaService.category.delete({
+            where: {
+                id: categoryId
+            }
+        })
+
+        return "Category deleted successflly"
+
+    }
+
+
 
 
 }
