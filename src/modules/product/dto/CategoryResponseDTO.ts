@@ -8,4 +8,8 @@ export class CategoryResponseDTO{
 
     @Expose()
     categoryName: string
+
+    constructor(partial : Partial<CategoryResponseDTO>){
+        Object.assign(this, partial)
+    }
 }
