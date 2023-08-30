@@ -25,7 +25,7 @@ model User {
   gender           String?
   image            String?
   role             RoleType
-  address          Address[]           
+  address          Address[]
   cartId           Int                @unique
   cart             Cart               @relation(fields: [cartId], references: [id])
   order            Order[]
@@ -55,7 +55,7 @@ model Address {
   country                  String
   isDefaultShippingAddress Boolean
   userId                   Int
-  user                     User @relation(fields: [userId], references: [id])
+  user                     User    @relation(fields: [userId], references: [id])
 }
 
 model Cart {
@@ -88,9 +88,10 @@ model Product {
   updatedAt         DateTime       @updatedAt
   productImages     ProductImage[]
   cartItems         CartItems?
+  orderItems        OrderItems?
   categoryId        Int
   category          Category       @relation(fields: [categoryId], references: [id])
-  wishlist          WishList[]    
+  wishlist          WishList[]
   reviews           Reviews[]
 }
 
@@ -104,7 +105,7 @@ model ProductImage {
 
 model Category {
   id           Int       @id @default(autoincrement())
-  categoryName String @unique
+  categoryName String    @unique
   product      Product[]
 }
 
@@ -122,9 +123,13 @@ model Order {
 }
 
 model OrderItems {
-  id      Int   @id @default(autoincrement())
-  orderid Int
-  order   Order @relation(fields: [orderid], references: [id])
+  id        Int     @id @default(autoincrement())
+  orderid   Int
+  order     Order   @relation(fields: [orderid], references: [id])
+  subTotal  Decimal
+  quantity  Int
+  productId Int     @unique
+  product   Product @relation(fields: [productId], references: [id])
 }
 
 model WishList {
@@ -146,7 +151,7 @@ model Reviews {
 
 model Audit {
   id        Int         @id @default(autoincrement())
-  userId    Int         
+  userId    Int
   user      User        @relation(fields: [userId], references: [id])
   action    AuditAction
   tableName String
