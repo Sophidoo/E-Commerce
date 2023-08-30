@@ -1,17 +1,20 @@
-import { Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
 import { ReviewsService } from '../service/reviews.service';
 import { User } from 'src/decorator/user.decorator';
 import { ReviewDTO } from '../dto/ReviewDTO';
+import { Roles } from 'src/decorator/roles.decorator';
+import { RoleType } from '@prisma/client';
 
 @Controller('reviews')
 export class ReviewsController {
     constructor(private readonly reviewsService : ReviewsService){}
 
     @Post('/:productId')
-    addProductReview(@Param('producId') productId : number, @User() user: number, dto: ReviewDTO){
+    addProductReview(@Param('producId') productId : number, @User() user: number, @Body() dto: ReviewDTO){
         return this.reviewsService.addProductReview(productId, user, dto)
     }
 
+    @Roles(RoleType.ADMIN)
     @Delete('/:reviewId')
     deleteReview(@Param('reviewId') reviewId : number, @User() user: number){
         return this.reviewsService.deleteAReview(reviewId, user)
