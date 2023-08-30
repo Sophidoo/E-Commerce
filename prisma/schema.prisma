@@ -34,7 +34,7 @@ model User {
   wishlistId       Int?               @unique
   wishlist         WishList?          @relation(fields: [wishlistId], references: [id])
   reviews          Reviews[]
-  audit            Audit?
+  audit            Audit[]
   notification     UserNotification[]
 }
 
@@ -146,7 +146,7 @@ model Reviews {
 
 model Audit {
   id        Int         @id @default(autoincrement())
-  userId    Int         @unique
+  userId    Int         
   user      User        @relation(fields: [userId], references: [id])
   action    AuditAction
   tableName String

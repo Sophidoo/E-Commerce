@@ -66,8 +66,15 @@ export class ReviewsService {
             orderBy: {
                 createdAt: 'desc'
             },
-            include: {
-                user: true
+            select: {
+                id: true,
+                user: {
+                    select: {
+                        username: true
+                    }
+                },
+                feedback: true,
+                rating: true,
             }
         })
         return reviews.map(review => plainToInstance(ReviewResponseDTO, review))

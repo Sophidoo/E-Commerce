@@ -5,12 +5,12 @@ import { ReviewDTO } from '../dto/ReviewDTO';
 import { Roles } from 'src/decorator/roles.decorator';
 import { RoleType } from '@prisma/client';
 
-@Controller('reviews')
+@Controller('api/v1/reviews')
 export class ReviewsController {
     constructor(private readonly reviewsService : ReviewsService){}
 
     @Post('/:productId')
-    addProductReview(@Param('producId') productId : number, @User() user: number, @Body() dto: ReviewDTO){
+    addProductReview(@Param('productId') productId : number, @User() user: number, @Body() dto: ReviewDTO){
         return this.reviewsService.addProductReview(productId, user, dto)
     }
 

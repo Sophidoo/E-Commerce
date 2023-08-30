@@ -1,4 +1,9 @@
-import { Exclude, Expose } from "class-transformer"
+import { Decimal } from "@prisma/client/runtime/library";
+import { Exclude, Expose, Type } from "class-transformer"
+
+export class DecimalNumber extends Decimal {
+    constructor(value = 0) { super(value); }
+}
 
 @Exclude()
 export class CouponResponseDTO {
@@ -7,6 +12,7 @@ export class CouponResponseDTO {
     @Expose()
     couponCode : string
     @Expose()
+    @Type(() => DecimalNumber)
     discountPercentage : number
     @Expose()
     expiryDate : Date

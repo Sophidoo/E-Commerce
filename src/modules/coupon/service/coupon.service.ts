@@ -56,14 +56,16 @@ export class CouponService {
             throw new NotFoundException("Coupon with this id does not exist")
         }
 
-        const couponCodeExist = await this.prismaService.coupon.findUnique({
-            where: {
-                couponCode: dto.couponCode
+        if(dto.couponCode){
+            const couponCodeExist = await this.prismaService.coupon.findUnique({
+                where: {
+                    couponCode: dto.couponCode
+                }
+            })
+    
+            if(couponCodeExist){
+                throw new ConflictException("Coupon with this code already exists")
             }
-        })
-
-        if(couponCodeExist){
-            throw new ConflictException("Coupon with this code already exists")
         }
 
         const coupon = await this.prismaService.coupon.update({
@@ -123,7 +125,7 @@ export class CouponService {
         audit.userId = userId
         await this.auditSercice.addToAudit(audit)
 
-        return "COupon deleted successfully"
+        return "Coupon deleted successfully"
     }
 
     async viewAllCoupons() : Promise<CouponResponseDTO[]>{

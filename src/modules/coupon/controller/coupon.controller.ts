@@ -6,7 +6,7 @@ import { CouponDTO, EditCouponDTO } from '../dto/CouponDTO';
 import { User } from 'src/decorator/user.decorator';
 import { use } from 'passport';
 
-@Controller('api/v1coupon')
+@Controller('api/v1/coupon')
 export class CouponController {
     constructor(private readonly couponService : CouponService){}
 
@@ -18,15 +18,17 @@ export class CouponController {
 
     @Roles(RoleType.ADMIN)
     @Patch('/:couponId')
-    editCOupon(@Param('couponId') couponId : number, dto : EditCouponDTO, @User() user : number){
+    editCOupon(@Param('couponId') couponId : number, @Body() dto : EditCouponDTO, @User() user : number){
         return this.couponService.editCoupon(couponId, dto, user)
     }
 
-    @Get('/:couponCode')
+    @Roles(RoleType.ADMIN, RoleType.USER)
+    @Get('/findOne/:couponCode')
     findByCouponCode(@Param('couponCode') couponCode : string){
         return this.couponService.findAParticularCoupon(couponCode)
     }
 
+    @Roles(RoleType.ADMIN)
     @Get('/all')
     viewAllCoupons(){
         return this.couponService.viewAllCoupons()
