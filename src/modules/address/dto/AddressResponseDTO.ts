@@ -5,6 +5,8 @@ import { IsNotEmpty, IsOptional, IsString } from "class-validator"
 @Exclude()
 export class AddressResponseDTO{
     @Expose()
+    id: number
+    @Expose()
     streetAddress : string
     @Expose()
     city   : string    

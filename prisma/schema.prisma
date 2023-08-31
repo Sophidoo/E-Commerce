@@ -56,6 +56,7 @@ model Address {
   isDefaultShippingAddress Boolean
   userId                   Int
   user                     User    @relation(fields: [userId], references: [id])
+  order                    Order[]
 }
 
 model Cart {
@@ -112,13 +113,15 @@ model Category {
 model Order {
   id            Int          @id @default(autoincrement())
   dateOrdered   DateTime
-  dateDelivered DateTime
+  dateDelivered DateTime?
   totalPrice    Decimal
   status        OrderStatus
   orderItems    OrderItems[]
   userId        Int
   deliveryType  DeliveryType
   user          User         @relation(fields: [userId], references: [id])
+  addressId     Int?
+  address       Address?      @relation(fields: [addressId], references: [id])
   payment       Payment?
 }
 

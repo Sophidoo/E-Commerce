@@ -72,7 +72,7 @@ export class AddressService {
         return address.map((address) => plainToInstance(AddressResponseDTO, address))
     }
 
-    async getDefaultAddress (id : number) : Promise<AddressResponseDTO | string>{
+    async getDefaultAddress (id : number) : Promise<AddressResponseDTO>{
         const address = await this.prismaService.address.findFirst({
             where: {
                 AND: {
@@ -81,6 +81,7 @@ export class AddressService {
                 }
             },
             select: {
+                id: true,
                 streetAddress: true,
                 city: true,
                 state: true,
@@ -90,7 +91,7 @@ export class AddressService {
         })
 
         if(!address){
-            return "User have no default address"
+            throw new NotFoundException("User have no default address")
         }
 
         return plainToInstance(AddressResponseDTO, address)
