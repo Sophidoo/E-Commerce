@@ -12,6 +12,7 @@ import { AddressDTO } from 'src/modules/address/dto/addressDTO';
 import { OrderStatusDTO } from '../dto/OrderStatusDTO';
 import { PaginatedOrderResponseDTO } from '../dto/OrderResponsedTO';
 import { PaymentService } from './payment.service';
+import { Metadata } from '../dto/MetaData';
 
 @Injectable()
 export class OrderService {
@@ -145,9 +146,38 @@ export class OrderService {
             },
             data: {
                 status: dto.orderStatus
+            },
+            include: {
+                payment: true,
+                orderItems: true
             }
         })
 
+
+        if(update.status == 'CANCELLED' && update.payment.status == 'success'){
+            update.orderItems.map(async orderItem => {
+                const product = await this.prismaService.product.findUnique({
+                    where: {
+                        id: orderItem.productId
+                    }
+                })
+    
+                if(!product){
+                    throw new NotFoundException(`A product you are trying to purchase with id = ${product.id} is no longer available`)
+                }
+    
+                await this.prismaService.product.update({
+                    where: {
+                        id: product.id
+                    },
+                    data: {
+                        quantityAvailable: product.quantityAvailable + orderItem.quantity
+                    }
+                })
+    
+    
+            })
+        }
         return update
     }
 
@@ -180,34 +210,6 @@ export class OrderService {
             subTotal: cartItem.subTotal
         }));
 
-        cartItems.map(async cartItem => {
-            const product = await this.prismaService.product.findUnique({
-                where: {
-                    id: cartItem.productId
-                }
-            })
-
-            if(!product){
-                throw new NotFoundException(`A product you are trying to purchase with id = ${product.id} is no longer available`)
-            }
-
-            if(cartItem.quantity > product.quantityAvailable){
-                throw new BadRequestException(`Product with id = ${product.id} has only ${product.quantityAvailable} left}`)
-            }
-
-            await this.prismaService.product.update({
-                where: {
-                    id: product.id
-                },
-                data: {
-                    quantityAvailable: product.quantityAvailable - cartItem.quantity
-                }
-            })
-
-
-        })
-
-        console.log("Cart items changed to order items")
 
         const total = orderItemsData.reduce((total , item) =>  total.add(item.subTotal) , new Decimal(0))
 
@@ -269,14 +271,21 @@ export class OrderService {
             },
             include: {
                 address: true,
-                user: true
+                user: {
+                    select: {
+                        image: true,
+                        firstname: true,
+                        lastname: true,
+                        email: true,
+                        username: true
+                    }
+                }
             }
             
         })
-
-        await this.paymentService.initializePayment(order.user.email, order.totalPrice).catch(e => {
-            throw new Error(e)
-        })
+        const metadata = new Metadata
+        metadata.amount = order.totalPrice,
+        metadata.orderId = order.id
         
         
         return order

@@ -1,7 +1,7 @@
 
 
 import { DeliveryType } from "@prisma/client"
-import { IsBoolean, IsNotEmpty, IsOptional, IsString } from "class-validator"
+import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator"
 
 
 export class CheckoutDTO{
@@ -17,6 +17,7 @@ export class CheckoutDTO{
     useDefaultShippingAddress: boolean
     @IsOptional()
     coupon : string  
-    @IsOptional()
+    @IsNotEmpty()
+    @IsEnum(DeliveryType)
     deliveryType : DeliveryType
 }

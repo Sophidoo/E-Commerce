@@ -89,7 +89,7 @@ model Product {
   updatedAt         DateTime       @updatedAt
   productImages     ProductImage[]
   cartItems         CartItems?
-  orderItems        OrderItems?
+  orderItems        OrderItems[]
   categoryId        Int
   category          Category       @relation(fields: [categoryId], references: [id])
   wishlist          WishList[]
@@ -131,7 +131,7 @@ model OrderItems {
   order     Order   @relation(fields: [orderid], references: [id])
   subTotal  Decimal
   quantity  Int
-  productId Int     @unique
+  productId Int     
   product   Product @relation(fields: [productId], references: [id])
 }
 
