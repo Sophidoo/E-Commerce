@@ -20,6 +20,8 @@ export class UserResponseDTO {
     @Expose()
     gender: string
     @Expose()
+    isVerified: boolean
+    @Expose()
     email: string
     @Expose()
     role: string

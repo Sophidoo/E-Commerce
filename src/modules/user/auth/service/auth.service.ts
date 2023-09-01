@@ -189,6 +189,10 @@ export class AuthService {
         if(!exists.isVerified){
             throw new UnauthorizedException('Please verify your account')
         }
+        
+        if(exists.isBlocked){
+            throw new UnauthorizedException('Account is blocked, Please contact support')
+        }
 
         const passwordMatch = await this.passwordsMatch(exists.password, dto.password)
         if(!passwordMatch){

@@ -3,9 +3,10 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
 import { google } from 'googleapis';
 import { Options } from 'nodemailer/lib/smtp-transport';
+import { PrismaService } from 'src/database/prisma.service';
 @Injectable()
 export class MailService {
-    constructor(private readonly mailerService : MailerService, private readonly configService : ConfigService){}
+    constructor(private readonly mailerService : MailerService, private readonly configService : ConfigService, private readonly prismaService : PrismaService){}
 
     private async setTransport() {
         const OAuth2 = google.auth.OAuth2;
@@ -41,18 +42,18 @@ export class MailService {
           this.mailerService.addTransporter('gmail', config);
     }
 
-    public async sendMail(email: string) {
+    public async sendMail(email: string, subject: string, data: string) {
         await this.setTransport();
         this.mailerService
           .sendMail({
             transporterName: 'gmail',
             to: email, // list of receivers
             from: 'noreply@nestjs.com', // sender address
-            subject: 'Verficiaction Code', // Subject line
+            subject: subject, // Subject line
             template: 'otp',
             context: {
               // Data to be sent to template engine..
-              otp: '38320',
+              data: data,
             },
           })
           .then((success) => {
@@ -62,6 +63,46 @@ export class MailService {
                 console.log(err);
             });
     }
+
+    public async sendMailToAll(subject: string, data: string) {
+      const users = await this.prismaService.user.findMany({
+        where: {
+            AND: {
+              isBlocked : {
+                not : true
+              },
+              isVerified: true
+            }
+        }
+    })
+
+      const emails = []
+
+      users.map(user => {
+        emails.push(user.email)
+      })
+
+      await this.setTransport();
+      this.mailerService
+        .sendMail({
+          transporterName: 'gmail',
+          to: emails, 
+          from: 'noreply@nestjs.com', 
+          subject: subject,
+          template: 'otp',
+          context: {
+            data: data,
+          },
+        })
+        .then((success) => {
+          console.log(success);
+        })
+        .catch((err) => {
+            console.log(err);
+        });
+    }
+
+
 
     public async sendOtpMail(email: string, otp: string, subject: string, template: string, ) {
         await this.setTransport();

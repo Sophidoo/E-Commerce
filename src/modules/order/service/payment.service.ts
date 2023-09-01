@@ -8,20 +8,37 @@ import { Payment } from '@prisma/client';
 import { AddressResponseDTO } from 'src/modules/address/dto/AddressResponseDTO';
 import { CheckoutDTO } from '../dto/CheckoutDTO';
 import { CartService } from 'src/modules/cart/service/cart.service';
+import { CouponService } from 'src/modules/coupon/service/coupon.service';
 
 @Injectable()
 export class PaymentService {
 
-    constructor(private readonly prismaService : PrismaService, private readonly cartService : CartService){}
+    constructor(private readonly prismaService : PrismaService, private readonly cartService : CartService, private readonly couponService : CouponService){}
 
-    async initializePayment(email: string, amount: number, metadata: Metadata){
+    async initializePayment(email: string, amount: number,  metadata: Metadata, coupon?: string,){
+        const validCoupon = await this.couponService.findAParticularCoupon(coupon)
+
+        if(!validCoupon){
+            throw new BadRequestException("Invalid coupon code")
+        }
+
+        if(new Date() > validCoupon.expiryDate){
+            throw new BadRequestException("Coupon is expired")
+        }
+         
+        const discount = (validCoupon.discountPercentage/100) * amount
+        const newAmount = amount - discount
+
         const params = JSON.stringify({
             "email": email,
-            "amount": Math.round(amount * 100),
+            "amount": Math.round(newAmount * 100),
             "currency": 'NGN',
             metadata: {
                 "orderId": metadata.orderId,
-                "orderTotal": metadata.amount
+                "orderTotal": metadata.amount,
+                "discount": discount,
+                "originalAmountToPay": amount,
+                "couponCode": coupon
             }
         })
         const options = {
@@ -34,6 +51,8 @@ export class PaymentService {
               'Content-Type': 'application/json'
             }
         }
+
+        
 
         return new Promise((resolve, reject) => {
             const req = https.request(options, (res) => {
@@ -94,12 +113,16 @@ export class PaymentService {
     }
 
     async createPayment(dto : PaymentDTO, userId : number) : Promise<Payment>{
+
+        const coupon = await this.couponService.findAParticularCoupon(dto.couponCode)
+
         const payment = await this.prismaService.payment.upsert({
             create: {
                 orderId: dto.orderId,
                 paymentmethod: dto.paymentMethod,
                 status: dto.status,
-                amount: dto.amount
+                amount: dto.amount,
+                couponId: coupon.id
             },
             update: {
                 paymentmethod: dto.paymentMethod,

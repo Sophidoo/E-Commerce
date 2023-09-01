@@ -17,9 +17,10 @@ import { AuditModule } from './modules/audit/audit.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { CouponModule } from './modules/coupon/coupon.module';
 import { OrderModule } from './modules/order/order.module';
+import { NotificationModule } from './modules/notification/notification.module';
 
 @Module({
-  imports: [UserModule, ProductModule, CartModule, AddressModule, WishlistModule, ReviewsModule, CouponModule, AuditModule, OrderModule,ConfigModule.forRoot({
+  imports: [UserModule, ProductModule, CartModule, AddressModule, WishlistModule, ReviewsModule, NotificationModule,CouponModule, AuditModule, OrderModule,ConfigModule.forRoot({
     isGlobal: true
   }), MailerModule.forRoot({
     transport: 'smtps://user@domain.com:pass@smtp.domain.com',

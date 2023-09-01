@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { RoleType } from '@prisma/client';
 import { Strategy, VerifyCallback } from 'passport-google-oauth20';
@@ -36,6 +36,10 @@ export class GoogleStrategyService extends PassportStrategy(Strategy, 'google'){
                 email: user.email
             }
         })
+
+        if(userProfile && userProfile.isBlocked){
+            throw new UnauthorizedException('Account is blocked, Please contact support')
+        }
 
         if(!userProfile){
             userProfile = await this.prismaService.user.create({

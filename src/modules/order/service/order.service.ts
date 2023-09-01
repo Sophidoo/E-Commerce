@@ -13,10 +13,12 @@ import { OrderStatusDTO } from '../dto/OrderStatusDTO';
 import { PaginatedOrderResponseDTO } from '../dto/OrderResponsedTO';
 import { PaymentService } from './payment.service';
 import { Metadata } from '../dto/MetaData';
+import { NoificationService } from 'src/modules/notification/service/noification.service';
+import { NotificationDTO } from 'src/modules/notification/dto/notificationDTO';
 
 @Injectable()
 export class OrderService {
-    constructor (private readonly prismaService : PrismaService, private readonly audtService : AuditService, private readonly addressService : AddressService, private readonly paymentService : PaymentService){}
+    constructor (private readonly prismaService : PrismaService, private readonly audtService : AuditService, private readonly addressService : AddressService, private readonly paymentService : PaymentService, private readonly notificationService : NoificationService){}
 
     async viewUserOrderHistory(id : number, pageSize? :number, pageNo? : number): Promise<Order[]>{
 
@@ -178,6 +180,14 @@ export class OrderService {
     
             })
         }
+
+        const notification = new NotificationDTO
+        notification.isRead = false
+        notification.notificationType = "Order Status Update"
+        notification.content = `Your order wit id #${update.id} has been ${update.status}`
+
+        await this.notificationService.sendNotificationToUser(update.userId, notification)
+
         return update
     }
 

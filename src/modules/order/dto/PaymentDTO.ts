@@ -1,6 +1,6 @@
 import { Decimal } from "@prisma/client/runtime/library";
 import { Type } from "class-transformer";
-import { IsNotEmpty } from "class-validator";
+import { IsNotEmpty, IsOptional } from "class-validator";
 
 
 export class DecimalNumber extends Decimal {
@@ -17,4 +17,6 @@ export class PaymentDTO{
     paymentMethod: string
     @IsNotEmpty()
     status: string
+    @IsOptional()
+    couponCode : string
 }

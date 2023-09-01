@@ -8,10 +8,12 @@ import { AddressService } from '../address/service/address.service';
 import { PaymentService } from './service/payment.service';
 import { PaymentController } from './controller/payment.controller';
 import { CartService } from '../cart/service/cart.service';
+import { CouponService } from '../coupon/service/coupon.service';
+import { NoificationService } from '../notification/service/noification.service';
 
 @Module({
   controllers: [OrderController, PaymentController],
-  providers: [OrderService, AuditService, AddressService, CartService, PaymentService],
+  providers: [OrderService, AuditService, AddressService, CartService, NoificationService, PaymentService, CouponService],
   imports: [PrismaModule]
 })
 export class OrderModule {}
