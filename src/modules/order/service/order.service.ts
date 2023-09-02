@@ -218,7 +218,28 @@ export class OrderService {
             productId: cartItem.productId,
             quantity: cartItem.quantity,
             subTotal: cartItem.subTotal
+
         }));
+
+        cartItems.map(async cartItem => {
+            const product = await this.prismaService.product.findUnique({
+                where: {
+                    id:cartItem.productId
+                }
+            })
+
+            if(!product){
+                throw new NotFoundException(`${product.productName} you are trying to purchase is no longer available`)
+            }
+
+            if(cartItem.quantity > product.quantityAvailable){
+                throw new BadRequestException(`${product.productName} has only ${product.quantityAvailable} available`)
+            }
+
+            if(product.isLocked){
+                throw new BadRequestException('One or more products in the order are locked.')
+            }
+        })
 
 
         const total = orderItemsData.reduce((total , item) =>  total.add(item.subTotal) , new Decimal(0))
@@ -301,6 +322,9 @@ export class OrderService {
         return order
 
     }
+
+
+    
 
 
 }

@@ -11,12 +11,12 @@ export class AddressService {
     constructor(private readonly prismaService : PrismaService){}
 
     async addAddress(id: number, dto: AddressDTO): Promise<AddressResponseDTO>{
-        if(dto.isDefaultShippingAddress){
-            const previousDefaultAddress = await this.prismaService.address.findFirst({
-                where: {
-                    isDefaultShippingAddress: true
-                }
-            })
+        const previousDefaultAddress = await this.prismaService.address.findFirst({
+            where: {
+                isDefaultShippingAddress: true
+            }
+        })
+        if(dto.isDefaultShippingAddress && previousDefaultAddress){
     
             await this.prismaService.address.update({
                 where: {

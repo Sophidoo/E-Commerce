@@ -94,6 +94,7 @@ model Product {
   category          Category       @relation(fields: [categoryId], references: [id])
   wishlist          WishList[]
   reviews           Reviews[]
+  isLocked          Boolean        @default(false)
 }
 
 model ProductImage {
@@ -179,8 +180,8 @@ model Payment {
   createdAt     DateTime @default(now())
   status        String
   amount        Decimal
-  couponId      Int
-  coupon        Coupon   @relation(fields: [couponId], references: [id])
+  couponId      Int?
+  coupon        Coupon?  @relation(fields: [couponId], references: [id])
   paymentmethod String
 }
 

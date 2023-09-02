@@ -5,6 +5,8 @@ import { Decimal } from '@prisma/client/runtime/library';
 import { Metadata } from '../dto/MetaData';
 import { PaymentDTO } from '../dto/PaymentDTO';
 import { User } from 'src/decorator/user.decorator';
+import { RoleType } from '@prisma/client';
+import { Roles } from 'src/decorator/roles.decorator';
 
 @Controller('payment')
 export class PaymentController {
@@ -15,7 +17,7 @@ export class PaymentController {
         return this.paymentService.initializePayment(email, amount, metadata,  coupon)
     }
 
-    @Get('/:reference')
+    @Get('/verify/:reference')
     verifyTransaction(@Param('reference') reference : string){
         return this.paymentService.verifyTransaction(reference)
     }
@@ -23,6 +25,12 @@ export class PaymentController {
     @Post('/savePayment')
     createPayment(@Body() dto : PaymentDTO, @User() user : number){
         return this.paymentService.createPayment(dto, user)
+    }
+
+    @Roles(RoleType.ADMIN)
+    @Get('/graph/:year')
+    async getMonthlySales(@Param('year') year : number){
+        return this.paymentService.retrieveMonthlySales(year)
     }
     
 }
