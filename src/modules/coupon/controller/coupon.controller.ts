@@ -5,7 +5,9 @@ import { RoleType } from '@prisma/client';
 import { CouponDTO, EditCouponDTO } from '../dto/CouponDTO';
 import { User } from 'src/decorator/user.decorator';
 import { use } from 'passport';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Coupon')
 @Controller('api/v1/coupon')
 export class CouponController {
     constructor(private readonly couponService : CouponService){}

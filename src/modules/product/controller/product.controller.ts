@@ -12,7 +12,9 @@ import { Express } from 'express';
 import { ProductImageUploadDTO } from '../dto/ProductImageUploadDTO';
 import { CategoryDTO } from '../dto/CategoryDTO';
 import { User } from 'src/decorator/user.decorator';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Product')
 @Controller('api/v1/product')
 export class ProductController {
     constructor(private readonly productService: ProductService){}

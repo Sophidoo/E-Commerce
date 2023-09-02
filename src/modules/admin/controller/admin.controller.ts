@@ -3,7 +3,9 @@ import { AdminService } from '../service/admin.service';
 import { Roles } from 'src/decorator/roles.decorator';
 import { RoleType } from '@prisma/client';
 import { User } from 'src/decorator/user.decorator';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Admin')
 @Roles(RoleType.ADMIN)
 @Controller('api/v1/admin')
 export class AdminController {

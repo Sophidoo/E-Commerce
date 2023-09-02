@@ -5,7 +5,9 @@ import { CheckoutDTO } from '../dto/CheckoutDTO';
 import { Roles } from 'src/decorator/roles.decorator';
 import { OrderStatus, RoleType } from '@prisma/client';
 import { OrderStatusDTO } from '../dto/OrderStatusDTO';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Orders')
 @Controller('api/v1/order')
 export class OrderController {
     constructor(private readonly orderService : OrderService){}

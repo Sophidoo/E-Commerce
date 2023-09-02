@@ -4,7 +4,9 @@ import { Public } from 'src/decorator/public.decorator';
 import { Subject } from 'rxjs';
 import { Roles } from 'src/decorator/roles.decorator';
 import { RoleType } from '@prisma/client';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Mail')
 @Controller('mailer')
 export class MailerController {
     constructor(private readonly mailService : MailService){}

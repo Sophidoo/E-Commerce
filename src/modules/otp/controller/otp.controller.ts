@@ -3,7 +3,9 @@ import { OtpService } from '../service/otp.service';
 import { CreateOtpDTO } from '../dtos/createOtpDTO';
 import { VerifyOtpDTO } from '../dtos/verifyOtp';
 import { Public } from 'src/decorator/public.decorator';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Otp')
 @Controller('otp')
 export class OtpController {
     constructor(private readonly otpService : OtpService){}

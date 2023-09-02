@@ -12,7 +12,9 @@ import { UpdateUserDTO } from '../../dtos/UpdateUserDTO';
 import { LoginResponseDTO } from '../../dtos/LoginResponseDTO';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { use } from 'passport';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Authentication')
 @Controller('api/v1/auth')
 export class AuthController {
 

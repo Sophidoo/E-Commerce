@@ -7,7 +7,9 @@ import { PaymentDTO } from '../dto/PaymentDTO';
 import { User } from 'src/decorator/user.decorator';
 import { RoleType } from '@prisma/client';
 import { Roles } from 'src/decorator/roles.decorator';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Payment')
 @Controller('payment')
 export class PaymentController {
     constructor (private readonly paymentService : PaymentService){}

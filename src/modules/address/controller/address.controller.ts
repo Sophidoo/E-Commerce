@@ -6,7 +6,10 @@ import { User } from 'src/decorator/user.decorator';
 import { use } from 'passport';
 import { Roles } from 'src/decorator/roles.decorator';
 import { RoleType } from '@prisma/client';
+import { ApiTags } from '@nestjs/swagger';
 
+
+@ApiTags("Address")
 @Controller('api/v1/address')
 export class AddressController {
     constructor(private readonly addressService : AddressService){}

@@ -4,7 +4,9 @@ import { User } from 'src/decorator/user.decorator';
 import { NotificationDTO } from '../dto/notificationDTO';
 import { Roles } from 'src/decorator/roles.decorator';
 import { RoleType } from '@prisma/client';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Notification')
 @Controller('api/v1/notification')
 export class NotificationController {
     constructor(private readonly notificationService : NoificationService){}

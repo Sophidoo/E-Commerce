@@ -3,7 +3,9 @@ import { CartService } from '../service/cart.service';
 import { User } from 'src/decorator/user.decorator';
 import { Roles } from 'src/decorator/roles.decorator';
 import { RoleType } from '@prisma/client';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Cart')
 @Controller('api/v1/cart')
 export class CartController {
     constructor(private readonly cartService : CartService){}

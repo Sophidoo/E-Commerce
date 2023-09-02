@@ -3,7 +3,9 @@ import { WishlistService } from '../service/wishlist.service';
 import { User } from 'src/decorator/user.decorator';
 import { RoleType } from '@prisma/client';
 import { Roles } from 'src/decorator/roles.decorator';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Wishlist')
 @Controller('api/v1/wishlist')
 export class WishlistController {
     constructor(private readonly wishlistService : WishlistService){}
