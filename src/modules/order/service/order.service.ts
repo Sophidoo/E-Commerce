@@ -1,12 +1,10 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import * as https from 'https'
 import { $Enums, Address, CartItems, Order, OrderItems, OrderStatus } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { PrismaService } from 'src/database/prisma.service';
 import { AddressService } from 'src/modules/address/service/address.service';
 import { AuditService } from 'src/modules/audit/service/audit.service';
 import { CheckoutDTO } from '../dto/CheckoutDTO';
-import { plainToClass, plainToInstance } from 'class-transformer';
 import { AddressResponseDTO } from 'src/modules/address/dto/AddressResponseDTO';
 import { AddressDTO } from 'src/modules/address/dto/addressDTO';
 import { OrderStatusDTO } from '../dto/OrderStatusDTO';
