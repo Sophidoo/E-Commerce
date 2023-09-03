@@ -1,13 +1,13 @@
-import { ApiProperty } from "@nestjs/swagger"
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger"
 import { IsNotEmpty, IsOptional, IsStrongPassword } from "class-validator"
 
 export class EditAuthDetailsDTO{
-    @ApiProperty()
+    @ApiPropertyOptional()
     @IsOptional()
     @IsNotEmpty()
     username?: string
     
-    @ApiProperty()
+    @ApiPropertyOptional()
     @IsOptional()
     @IsNotEmpty()
     email?: string
