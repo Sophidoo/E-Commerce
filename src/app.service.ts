@@ -1,65 +1,6 @@
-import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
-import { PrismaService } from './database/prisma.service';
-import * as bcrypt from 'bcrypt'
-import * as jwt from 'jsonwebtoken'
-import { RoleType } from '@prisma/client';
-
+import { Injectable } from '@nestjs/common';
 @Injectable()
-export class AppService implements OnApplicationBootstrap{
-  constructor(private readonly prismaService: PrismaService){}
-  async onApplicationBootstrap() {
-    const users = await this.prismaService.user.findMany()
-
-    if(users && users.length == 0){
-      await this.prismaService.user.create({
-        data: {
-            username: 'admin',
-            email: 'ecommerce@gmail.com',
-            password: await this.hashPassword('root@Password'),
-            isBlocked: false,
-            cart: {
-                create: {
-                    quantity: 0,
-                    cartTotal : 0
-                }
-            },
-            wishlist: {
-                create: {}
-            },
-            role: RoleType.ADMIN,
-            isVerified: true,
-        }
-      })
-    }else{
-      setTimeout(async () => {
-        if(users.length == 0){
-          await this.prismaService.user.create({
-            data: {
-                username: 'admin',
-                email: 'ecommerce@gmail.com',
-                password: await this.hashPassword('root@Password'),
-                isBlocked: false,
-                cart: {
-                    create: {
-                        quantity: 0,
-                        cartTotal : 0
-                    }
-                },
-                wishlist: {
-                    create: {}
-                },
-                role: RoleType.ADMIN,
-                isVerified: true,
-            }
-          })
-        }
-      }, 10000)
-    }
-  }
+export class AppService{
   
-  public async hashPassword (password: string) {
-      const salt = await bcrypt.genSalt(10)
-      return await bcrypt.hash(password, salt)
-  }
   
 }
