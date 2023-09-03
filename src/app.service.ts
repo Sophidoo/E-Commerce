@@ -8,26 +8,51 @@ import { RoleType } from '@prisma/client';
 export class AppService implements OnApplicationBootstrap{
   constructor(private readonly prismaService: PrismaService){}
   async onApplicationBootstrap() {
+    const users = await this.prismaService.user.findMany()
 
-    if((await this.prismaService.user.findMany()).length == 0){
+    if(users && users.length == 0){
       await this.prismaService.user.create({
-          data: {
-              username: 'admin',
-              email: 'ecommerce@gmail.com',
-              password: await this.hashPassword('root@Password'),
-              isBlocked: false,
-              cart: {
-                  create: {
-                      quantity: 0,
-                      cartTotal : 0
-                  }
-              },
-              wishlist: {
-                  create: {}
-              },
-              role: RoleType.ADMIN,
-              isVerified: true,
-          }
+        data: {
+            username: 'admin',
+            email: 'ecommerce@gmail.com',
+            password: await this.hashPassword('root@Password'),
+            isBlocked: false,
+            cart: {
+                create: {
+                    quantity: 0,
+                    cartTotal : 0
+                }
+            },
+            wishlist: {
+                create: {}
+            },
+            role: RoleType.ADMIN,
+            isVerified: true,
+        }
+      })
+    }else{
+      setTimeout(async () => {
+        if(users.length == 0){
+          await this.prismaService.user.create({
+            data: {
+                username: 'admin',
+                email: 'ecommerce@gmail.com',
+                password: await this.hashPassword('root@Password'),
+                isBlocked: false,
+                cart: {
+                    create: {
+                        quantity: 0,
+                        cartTotal : 0
+                    }
+                },
+                wishlist: {
+                    create: {}
+                },
+                role: RoleType.ADMIN,
+                isVerified: true,
+            }
+          })
+        }
       })
     }
   }
