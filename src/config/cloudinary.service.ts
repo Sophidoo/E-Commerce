@@ -4,7 +4,6 @@ import { UploadApiErrorResponse, UploadApiResponse, v2 as cloudinary } from 'clo
 import { Express } from 'express';
 import { resolve } from 'path';
 import {toStream} from 'buffer-to-stream'
-import {CloudinaryStorage} from "multer-storage-cloudinary"
 
 
 @Injectable()

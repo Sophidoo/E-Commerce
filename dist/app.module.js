@@ -27,11 +27,12 @@ const reviews_module_1 = require("./modules/reviews/reviews.module");
 const coupon_module_1 = require("./modules/coupon/coupon.module");
 const order_module_1 = require("./modules/order/order.module");
 const notification_module_1 = require("./modules/notification/notification.module");
+const admin_module_1 = require("./modules/admin/admin.module");
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
     (0, common_1.Module)({
-        imports: [user_module_1.UserModule, product_module_1.ProductModule, cart_module_1.CartModule, address_module_1.AddressModule, wishlist_module_1.WishlistModule, reviews_module_1.ReviewsModule, notification_module_1.NotificationModule, coupon_module_1.CouponModule, audit_module_1.AuditModule, order_module_1.OrderModule, dist_1.ConfigModule.forRoot({
+        imports: [user_module_1.UserModule, product_module_1.ProductModule, cart_module_1.CartModule, admin_module_1.AdminModule, address_module_1.AddressModule, wishlist_module_1.WishlistModule, reviews_module_1.ReviewsModule, notification_module_1.NotificationModule, coupon_module_1.CouponModule, audit_module_1.AuditModule, order_module_1.OrderModule, dist_1.ConfigModule.forRoot({
                 isGlobal: true
             }), mailer_1.MailerModule.forRoot({
                 transport: 'smtps://user@domain.com:pass@smtp.domain.com',
