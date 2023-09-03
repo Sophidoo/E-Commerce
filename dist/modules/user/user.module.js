@@ -24,7 +24,7 @@ UserModule = __decorate([
         controllers: [auth_controller_1.AuthController, google_strategy_controller_1.GoogleStrategyController],
         providers: [auth_service_1.AuthService, google_strategy_service_1.GoogleStrategyService, cloudinary_service_1.CloudinaryService],
         imports: [prisma_module_1.PrismaModule, otp_module_1.OtpModule, mail_module_1.MailModule, platform_express_1.MulterModule.register({
-                dest: "/profile"
+                dest: "./profile"
             })]
     })
 ], UserModule);

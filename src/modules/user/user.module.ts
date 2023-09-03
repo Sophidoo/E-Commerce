@@ -13,7 +13,7 @@ import { MulterModule } from '@nestjs/platform-express';
     controllers: [AuthController, GoogleStrategyController],
     providers: [AuthService, GoogleStrategyService, CloudinaryService],
     imports: [PrismaModule, OtpModule, MailModule, MulterModule.register({
-        dest: "/profile"
+        dest: "./profile"
     })]
 })
 
