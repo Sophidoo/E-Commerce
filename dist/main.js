@@ -15,7 +15,7 @@ async function bootstrap() {
         }
     }));
     (0, swagger_1.setupSwagger)(app);
-    await app.listen(3000);
+    await app.listen(3001);
 }
 bootstrap();
 //# sourceMappingURL=main.js.map

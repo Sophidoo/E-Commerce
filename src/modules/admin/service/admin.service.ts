@@ -11,7 +11,6 @@ export class AdminService {
         const users = await this.prismaService.user.findMany()
 
         return users.map(user => plainToInstance(UserResponseDTO, user))
-
     }
 
     async blockUser(userId : number) : Promise<UserResponseDTO>{

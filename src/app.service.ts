@@ -9,7 +9,7 @@ export class AppService implements OnApplicationBootstrap{
   constructor(private readonly prismaService: PrismaService){}
   async onApplicationBootstrap() {
 
-    if(await this.prismaService.user.count() == 0){
+    if((await this.prismaService.user.findMany()).length == 0){
       await this.prismaService.user.create({
           data: {
               username: 'admin',
