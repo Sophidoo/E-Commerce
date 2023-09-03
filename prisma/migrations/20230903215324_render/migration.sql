@@ -32,7 +32,6 @@ CREATE TABLE "User" (
     "gender" TEXT,
     "image" TEXT,
     "role" "RoleType" NOT NULL,
-    "addressId" INTEGER,
     "cartId" INTEGER NOT NULL,
     "isVerified" BOOLEAN NOT NULL,
     "verificationCode" TEXT,
@@ -61,6 +60,7 @@ CREATE TABLE "Address" (
     "state" TEXT NOT NULL,
     "country" TEXT NOT NULL,
     "isDefaultShippingAddress" BOOLEAN NOT NULL,
+    "userId" INTEGER NOT NULL,
 
     CONSTRAINT "Address_pkey" PRIMARY KEY ("id")
 );
@@ -89,7 +89,7 @@ CREATE TABLE "CartItems" (
 CREATE TABLE "Product" (
     "id" SERIAL NOT NULL,
     "productName" TEXT NOT NULL,
-    "productPrice" INTEGER NOT NULL,
+    "productPrice" DECIMAL(65,30) NOT NULL,
     "quantityAvailable" INTEGER NOT NULL,
     "size" "Size" NOT NULL,
     "description" TEXT,
@@ -97,7 +97,7 @@ CREATE TABLE "Product" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "categoryId" INTEGER NOT NULL,
-    "wishlistId" INTEGER,
+    "isLocked" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "Product_pkey" PRIMARY KEY ("id")
 );
@@ -124,11 +124,12 @@ CREATE TABLE "Category" (
 CREATE TABLE "Order" (
     "id" SERIAL NOT NULL,
     "dateOrdered" TIMESTAMP(3) NOT NULL,
-    "dateDelivered" TIMESTAMP(3) NOT NULL,
+    "dateDelivered" TIMESTAMP(3),
     "totalPrice" DECIMAL(65,30) NOT NULL,
     "status" "OrderStatus" NOT NULL,
     "userId" INTEGER NOT NULL,
     "deliveryType" "DeliveryType" NOT NULL,
+    "addressId" INTEGER,
 
     CONSTRAINT "Order_pkey" PRIMARY KEY ("id")
 );
@@ -137,6 +138,9 @@ CREATE TABLE "Order" (
 CREATE TABLE "OrderItems" (
     "id" SERIAL NOT NULL,
     "orderid" INTEGER NOT NULL,
+    "subTotal" DECIMAL(65,30) NOT NULL,
+    "quantity" INTEGER NOT NULL,
+    "productId" INTEGER NOT NULL,
 
     CONSTRAINT "OrderItems_pkey" PRIMARY KEY ("id")
 );
@@ -152,7 +156,7 @@ CREATE TABLE "WishList" (
 CREATE TABLE "Reviews" (
     "id" SERIAL NOT NULL,
     "rating" DECIMAL(65,30) NOT NULL,
-    "feedback" TEXT NOT NULL,
+    "feedback" TEXT,
     "productId" INTEGER NOT NULL,
     "userId" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -191,6 +195,7 @@ CREATE TABLE "Payment" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "status" TEXT NOT NULL,
     "amount" DECIMAL(65,30) NOT NULL,
+    "couponId" INTEGER,
     "paymentmethod" TEXT NOT NULL,
 
     CONSTRAINT "Payment_pkey" PRIMARY KEY ("id")
@@ -216,14 +221,17 @@ CREATE TABLE "UserNotification" (
     CONSTRAINT "UserNotification_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "_ProductToWishList" (
+    "A" INTEGER NOT NULL,
+    "B" INTEGER NOT NULL
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
-
--- CreateIndex
-CREATE UNIQUE INDEX "User_addressId_key" ON "User"("addressId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_cartId_key" ON "User"("cartId");
@@ -235,13 +243,10 @@ CREATE UNIQUE INDEX "User_wishlistId_key" ON "User"("wishlistId");
 CREATE UNIQUE INDEX "CartItems_productId_key" ON "CartItems"("productId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Product_wishlistId_key" ON "Product"("wishlistId");
-
--- CreateIndex
 CREATE UNIQUE INDEX "Category_categoryName_key" ON "Category"("categoryName");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Audit_userId_key" ON "Audit"("userId");
+CREATE UNIQUE INDEX "Coupon_couponCode_key" ON "Coupon"("couponCode");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Payment_orderId_key" ON "Payment"("orderId");
@@ -249,14 +254,20 @@ CREATE UNIQUE INDEX "Payment_orderId_key" ON "Payment"("orderId");
 -- CreateIndex
 CREATE UNIQUE INDEX "UserNotification_userId_notificationId_key" ON "UserNotification"("userId", "notificationId");
 
--- AddForeignKey
-ALTER TABLE "User" ADD CONSTRAINT "User_addressId_fkey" FOREIGN KEY ("addressId") REFERENCES "Address"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+-- CreateIndex
+CREATE UNIQUE INDEX "_ProductToWishList_AB_unique" ON "_ProductToWishList"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_ProductToWishList_B_index" ON "_ProductToWishList"("B");
 
 -- AddForeignKey
 ALTER TABLE "User" ADD CONSTRAINT "User_cartId_fkey" FOREIGN KEY ("cartId") REFERENCES "Cart"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "User" ADD CONSTRAINT "User_wishlistId_fkey" FOREIGN KEY ("wishlistId") REFERENCES "WishList"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Address" ADD CONSTRAINT "Address_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "CartItems" ADD CONSTRAINT "CartItems_cartId_fkey" FOREIGN KEY ("cartId") REFERENCES "Cart"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -268,16 +279,19 @@ ALTER TABLE "CartItems" ADD CONSTRAINT "CartItems_productId_fkey" FOREIGN KEY ("
 ALTER TABLE "Product" ADD CONSTRAINT "Product_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Product" ADD CONSTRAINT "Product_wishlistId_fkey" FOREIGN KEY ("wishlistId") REFERENCES "WishList"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "ProductImage" ADD CONSTRAINT "ProductImage_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Order" ADD CONSTRAINT "Order_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Order" ADD CONSTRAINT "Order_addressId_fkey" FOREIGN KEY ("addressId") REFERENCES "Address"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "OrderItems" ADD CONSTRAINT "OrderItems_orderid_fkey" FOREIGN KEY ("orderid") REFERENCES "Order"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "OrderItems" ADD CONSTRAINT "OrderItems_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Reviews" ADD CONSTRAINT "Reviews_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -292,7 +306,16 @@ ALTER TABLE "Audit" ADD CONSTRAINT "Audit_userId_fkey" FOREIGN KEY ("userId") RE
 ALTER TABLE "Payment" ADD CONSTRAINT "Payment_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Payment" ADD CONSTRAINT "Payment_couponId_fkey" FOREIGN KEY ("couponId") REFERENCES "Coupon"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "UserNotification" ADD CONSTRAINT "UserNotification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "UserNotification" ADD CONSTRAINT "UserNotification_notificationId_fkey" FOREIGN KEY ("notificationId") REFERENCES "Notification"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_ProductToWishList" ADD CONSTRAINT "_ProductToWishList_A_fkey" FOREIGN KEY ("A") REFERENCES "Product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_ProductToWishList" ADD CONSTRAINT "_ProductToWishList_B_fkey" FOREIGN KEY ("B") REFERENCES "WishList"("id") ON DELETE CASCADE ON UPDATE CASCADE;
