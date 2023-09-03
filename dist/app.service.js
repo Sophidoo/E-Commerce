@@ -64,7 +64,7 @@ let AppService = class AppService {
                         }
                     });
                 }
-            });
+            }, 10000);
         }
     }
     async hashPassword(password) {
